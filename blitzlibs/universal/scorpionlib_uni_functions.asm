@@ -390,11 +390,6 @@ SE_Int
   Swap.w D0 ;Put the upper 16 bits into the lower 16 bits
   RTS
 
-SE_Frac
-  ;Keep the bits we actually want? Including negative 
-  And.l #$8000FFFF,D0
-  RTS
-
 ;Copied from Amiblitz 3 reverse engineer
 SE_QWrap
   CMP.l d1,d0
