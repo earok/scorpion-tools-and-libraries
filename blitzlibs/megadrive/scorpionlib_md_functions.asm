@@ -1145,7 +1145,7 @@ SE_MD_ModeRegister4
 	RTS
 	
 SE_MD_Fake_AllocMem:
-  LEA           $FF0500,A0 ;Eat memory from the top, plus a few bytes for MDSDRV
+  LEA           $FF0000,A0 ;Eat memory from the top
 
 FakeAllocMem_Loop
   Tst.l         (A0)
