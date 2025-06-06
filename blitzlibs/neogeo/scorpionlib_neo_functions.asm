@@ -106,12 +106,16 @@ SE_Neo_ShrinkSprite
     ; d3.b is the group's width in sprites
     ; returns in D0 the amount of "adjustment" to center on the x axis
 
-    moveq   #0,D7
-
-    and.w   #$ff,d0 ;ensure is positive value
     add.w   #$8000,d2
     move.w  d2,REG_VRAMRW
     move.w  #1,REG_VRAMMOD
+
+    cmp.b   #$ff,D0
+    beq NoShrinkX
+
+    moveq   #0,D7
+
+    and.w   #$ff,d0 ;ensure is positive value
     move.w  d0,d2      ; Fast *15
     lsl.w   #4,d0
     sub.w   d2,d0
@@ -144,11 +148,24 @@ SE_Neo_ShrinkSprite
     lsr.w   #1,D0
     rts
 
+NoShrinkX
+    or.w   #$F00,d1 ;Put full X width on the Y width we've already established
+
+NoShrinkXNext
+    move.w  d1,VRAM_RW
+    subq.b  #1,d3      ; Next sprite
+    bne     NoShrinkXNext
+
+    moveq   #0,D0 ;Dont adjust on x
+    rts
+
 SE_Neo_ShrinkSprite_YAmount
     ;Use for centering on Y
     ; d0.w is the group's overall y shrink value ($00~$FF)
     ; d1.b is the group's height in sprites
     ; returns in D0 the amount of "adjustment" to center on the y axis
+    cmp.b   #$ff,d0
+    beq     NoYShrink
 
     moveq   #0,D7
     move.b  d1,d3
@@ -184,4 +201,8 @@ SE_Neo_ShrinkSprite_YAmount
 
     move.w  D7,D0
     lsr.w   #1,D0
+    rts
+
+NoYShrink
+    moveq   #0,D0 ;Don't adjust on Y
     rts

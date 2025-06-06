@@ -479,6 +479,13 @@
 		subs FixUpLeftAcceleration,0,0
 	name "FixUpLeftAcceleration","Speed.q,Acceleration.q,MaxSpeed.q"
 
+	astatement
+		args long,long
+		libs
+		subs zx0_decompress,0,0
+	name "ZX0_Decompress","Source,Destination"
+
+
 blitz_finit:
 	nullsub _blitz_ahx_lib_finit,0,0
 	libfin
