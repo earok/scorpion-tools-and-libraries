@@ -67,6 +67,13 @@ SE_Neo_SpriteHeight
   move.w       D1,VRAM_WRITE(A0)
   RTS
 
+SE_Neo_SpriteStick
+  lea.l        VRAM_BASE,A0
+  add.w        #$8200,D0
+  move.w       D0,VRAM_ADDRESS(A0)
+  move.w       #$40,VRAM_WRITE(A0)
+  RTS
+
 SE_NEO_Gamepad1
   Move.b        BIOS_STATCURNT,D0
   LSL.w         #8,D0	
@@ -96,7 +103,19 @@ SE_NEO_Gamepad4
   RTS  
 
 SE_NEO_ClearVDP
-  jmp           LSP_FIRST                   ;FIX_CLEAR - clear fix layer
+
+  ;Wipe sprite tiles
+  Lea.l         VRAM_BASE,A0
+  Move.w        #1,VRAM_MOD(A0)
+  Move.w        #0,VRAM_ADDRESS(A0)
+  MOVEQ         #0,D0
+  Move.w        #$6FFE,D1
+TileClearLoop
+  Move.w        D0,VRAM_WRITE(A0)
+  dbra.w        D1,TileClearLoop
+
+  jmp           LSP_FIRST ;Clear sprites
+  ;Still should do fix clear?
 
 SE_Neo_ShrinkSprite
     ;https://wiki.neogeodev.org/index.php?title=Scaling_sprite_groups

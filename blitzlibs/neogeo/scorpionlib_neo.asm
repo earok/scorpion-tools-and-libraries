@@ -27,6 +27,12 @@
   subs          SE_Neo_SpriteHeight,0,0    
   name          "SE_Neo_SpriteHeight","Sprite,Height"
 
+  astatement     
+  args          word
+  libs
+  subs          SE_Neo_SpriteStick,0,0   
+  name          "SE_Neo_SpriteStick","Sprite ID"
+
   astatement
   args          
   libs
