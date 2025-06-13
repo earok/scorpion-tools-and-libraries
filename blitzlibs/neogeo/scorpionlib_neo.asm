@@ -75,6 +75,13 @@
   subs          SE_Neo_ShrinkSprite_YAmount,0,0   
   name          "SE_Neo_ShrinkSprite_YAmount","Shrink Y,Sprite Height"
 
+;MEZZ ESTATE INTERFACE
+  astatement     
+  args          byte,byte
+  libs
+  subs          MZS_send_user_command,0,0   
+  name          "MZS_send_user_command","command, parameter"
+
     ; d0.w is the group's overall x shrink value ($00~$FF)
     ; d1.b is the group's y shrink value ($00~$FF)
     ; d2.w is the first sprite's SCB2 VRAM address ($8000+)

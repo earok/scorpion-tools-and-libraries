@@ -225,3 +225,38 @@ SE_Neo_ShrinkSprite_YAmount
 NoYShrink
     moveq   #0,D0 ;Don't adjust on Y
     rts
+
+;MEZZ ESTATE
+MZS_send_user_command
+    or.b #$80,D0
+    or.b #$80,D1
+
+    Move.b D0,$320000
+    EOR.b #$FF,D0
+commandloop    
+    jsr Z80Wait
+    move.b $320000,d7
+    cmp.b d7,D0
+    bne commandloop
+
+    Move.b D1,$320000
+    EOR.b #$FF,D1
+paramloop
+    jsr Z80Wait
+    move.b $320000,d7
+    cmp.b d7,d1
+    bne paramloop
+
+    rts
+
+; Z80Wait
+; Gives the Z80 some time to react. (Taken from smkdan's demo) FREEM
+Z80Wait:
+	move.w	d0,-(sp)
+	move.w	#1000,d0		; arbitrary delay length
+
+.Z80Wait_loop:
+	dbra	d0,.Z80Wait_loop
+
+	move.w	(sp)+,d0
+	rts
