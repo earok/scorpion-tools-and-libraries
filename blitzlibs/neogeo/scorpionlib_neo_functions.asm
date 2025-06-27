@@ -60,6 +60,21 @@ SE_Neo_SpriteX
   move.w       D1,VRAM_WRITE(A0)
   RTS
 
+;D0 = Source address (long)
+;D1 = VDP address (word)
+;D2 = Count (word)
+SE_Neo_SpriteBatch
+  lea.l        VRAM_BASE,A0
+  move.l       D0,A1
+  move.w       D1,VRAM_ADDRESS(A0)
+  subq.w       #1,D2
+  move.w       #1,VRAM_MOD(A0)
+
+SpriteBatchLoop
+  Move.w      (A1)+,(A0)
+  dbra        D2,SpriteBatchLoop
+  rts
+
 SE_Neo_SpriteHeight
   lea.l        VRAM_BASE,A0
   add.w        #$8200,D0

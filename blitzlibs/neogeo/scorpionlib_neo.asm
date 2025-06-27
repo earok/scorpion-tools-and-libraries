@@ -22,6 +22,12 @@
   name          "SE_Neo_SpriteX","Sprite,X"   
 
   astatement
+  args          long,word,word
+  libs
+  subs          SE_Neo_SpriteBatch,0,0    
+  name          "SE_Neo_SpriteBatch","Mem Address","VDP Address","Count"
+
+  astatement
   args          word,word
   libs
   subs          SE_Neo_SpriteHeight,0,0    
