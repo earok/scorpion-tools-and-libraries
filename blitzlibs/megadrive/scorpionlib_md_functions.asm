@@ -1145,7 +1145,7 @@ SE_MD_ModeRegister4
 	RTS
 	
 SE_MD_Fake_AllocMem:
-  LEA           $FF0000,A0 ;Eat memory from the top
+  LEA           $FF0428,A0 ;Eat memory from the top, excluding 1064 bytes to save space for audio drivers
 
 FakeAllocMem_Loop
   Tst.l         (A0)
