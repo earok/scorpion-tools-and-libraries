@@ -25,7 +25,7 @@ STATUS_CURRENT equ 2
 
 ;Fake version of Amiga's "Allocmem"
 SE_NEO_FakeAllocMem:
-  LEA           $100000,A0 ;Eat memory from the top
+  LEA           $100004,A0 ;Eat memory from the top, reserving a long word for Scorpion flags
 
 FakeAllocMem_Loop
   Tst.l         (A0)
