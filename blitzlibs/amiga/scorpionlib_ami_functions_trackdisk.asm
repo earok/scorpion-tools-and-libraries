@@ -63,7 +63,7 @@ DSKLEN	    EQU   $024
 DSKSYNC     EQU   $07E
 INTENA	    EQU   $09A
 INTREQ	    EQU   $09C
-DMACON	    EQU   $096
+;DMACON	    EQU   $096 -todo, merge these registers
 ADKCON	    EQU   $09E
 
 TDWRITE         equ     0 ;TDWrite is redundant because of TDFormat
