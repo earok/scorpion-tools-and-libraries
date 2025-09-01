@@ -79,12 +79,6 @@
   name "SE_MD_Scroll_Line","FG X,BG X Data"	
 
   astatement
-    args long
-    libs
-    subs SE_MD_PrepareSpriteWrite,0,0
-  name "SE_MD_PrepareSpriteWrite","Offset"
-
-  astatement
     args long, long, long
     libs
     subs SE_MD_WriteSRAM,0,0

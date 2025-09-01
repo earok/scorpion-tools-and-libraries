@@ -472,24 +472,6 @@ FadeEnd
 	MoveQ #-1,D0 ;Force the loading of the dirty state
     RTS
 
-SE_MD_PrepareSpriteWrite
-
-	LEA VDP_CONTROL,A0
-	Lsl.w #3,D0
-	Add.w #$FC00,D0
-
-	Move.w #$8F02,(A0) ;Set to word length
-	Move.l D0,D1
-	And.w #$3fff,D0
-	SWAP D0
-	
-	ROL.w #2,D1
-	And.w #3,D1
-	Or.w D1,D0
-	Or.l #$40000000,D0
-    move.l D0,(A0)
-	RTS
-
 SramLock:   equ $A130F1  ; Write 1 to unlock SRAM
 SramStart:  equ $200001  ; First SRAM address
 SramEnd:    equ $20FFFF  ; Last SRAM address
