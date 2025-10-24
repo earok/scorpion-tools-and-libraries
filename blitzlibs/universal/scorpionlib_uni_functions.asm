@@ -1,4 +1,5 @@
-BlockDataSize equ 68
+BlockDataSize equ 68 ;Need to round this down to 64
+BlockSlope equ 3
 
 DoIllegal
   ILLEGAL
@@ -275,6 +276,30 @@ GetMapBlock ;Same as TileB, but returns the actual block data
     Move.b (A0),D0 ;Move that back into D0
     Mulu #BlockDataSize,D0 ;Get the block offset
     Add.l D4,D0 ;Add the address of the block table
+    RTS
+
+GetMapSlope ;Same as GetMapBlock, but only returns the block data if it's an actual slope
+  	;Part 1 - Get the Y tile lookup address		
+    Add.w D1,D1
+    Add.w D1,D1 ;Convert to LONG address
+    Move.l D3,A0
+    Add.l 0(A0,D1),D0 ;Add the Y address to the X Address
+
+    Add.l D2,D0 ;Add the absolute map tile data address
+    Move.l D0,A0 ;Put it into
+  	MoveQ #0,D0 ;Clear out D0
+    Move.b (A0),D0 ;Move that back into D0
+    Mulu #BlockDataSize,D0 ;Get the block offset
+    Add.l D4,D0 ;Add the address of the block table
+
+    ;Final check - if it's not a slope, just return the 0th entry in the table
+    Move.l D0,A0
+    Tst.b BlockSlope(A0)
+    BEQ GetMapSlopeFailed
+    RTS
+
+GetMapSlopeFailed
+    Move.l D4,D0
     RTS
 
 SetTileB

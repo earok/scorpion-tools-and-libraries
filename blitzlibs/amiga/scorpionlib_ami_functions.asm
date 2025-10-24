@@ -646,6 +646,7 @@ SDisplaySprite_CancelLoop
 
 PatchScorpion
 	Move.l D0,DoMaskBlit2+2
+	Move.l D0,DoMaskBlit2FirstWordMask+2
 	Move.l D0,DoBarBlit+2
   Move.w D1,SDisplaySprite_16Col_Next+2
   Move.w D1,SDisplaySprite_4Col_Next+2
@@ -869,6 +870,32 @@ DoMaskBlit2
 
 ;BLTSIZE equ $58;($DFF058 - BlitterBase)
 
+DoMaskBlit2FirstWordMask
+  Move.l #12345678,A0
+  Lea CustomBase,A2
+  And.w #$f,D0 ;And.l
+  Ror.w #4,D0
+
+  ;Todo - maybe move to the memory registers ahead of the blit wait..?
+  WaitBlitFast DoMaskBlit2FirstWordMask
+  Move.w D0,BLTCON1(A2)
+  Or.w D1,D0
+  Move.w D0,BLTCON0(A2) ;Masked copy
+  Move.l D2,BLTAFWM(A2) ;First and last word mask
+
+  Move.w (A0),BLTCMOD(A2) ;Source C 60
+  Move.w (A0)+,BLTDMOD(A2) ;Destination D 66
+  Move.w (A0),BLTBMOD(A2) ;Source B 4c
+  Move.w (A0)+,BLTAMOD(A2) ;Source A 64
+
+  Move.l (A0)+,BLTBPTH(A2) ;Image b ;4C
+  Move.l (A0)+,BLTAPTH(A2) ;Mask - A ;50
+  Move.l (A0),BLTCPTH(A2) ;Destination - C $48
+
+  Add.w #BLTDPTH,A2
+  Move.l (A0)+,(A2)+ ;Destination - D BLTDPTH = 54
+  Move.w (A0),(A2) ;StartBlit = 58
+  RTS
 
 ;D0 = Position
 ;D1 = Minterm

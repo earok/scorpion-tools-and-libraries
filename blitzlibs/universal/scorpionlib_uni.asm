@@ -413,6 +413,12 @@
 		subs GetMapBlock,0,0
 	name "GetMapBlock","X.l,Y.l,ArrayAddress.l,YTileLookupAddress.l,ProjectBlockAddress.l"
 
+	afunction long 
+		args long,long,long,long,long
+		libs
+		subs GetMapSlope,0,0
+	name "GetMapSlope","X.l,Y.l,ArrayAddress.l,YTileLookupAddress.l,ProjectBlockAddress.l"
+
 	afunction word ;Returns word in order to be positive
 		args long,long,long,long,byte
 		libs
