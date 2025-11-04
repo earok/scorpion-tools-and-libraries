@@ -9,5 +9,3 @@ vasmm68k_mot -kick1hunks -Fhunkexe -nosym -o .\blitzlibs\bin\scorpionlib_neo.obj
 
 ::Build the Mega Drive specific functions
 vasmm68k_mot -kick1hunks -Fhunkexe -nosym -o .\blitzlibs\bin\scorpionlib_md.obj .\blitzlibs\megadrive\scorpionlib_md.asm
-
-

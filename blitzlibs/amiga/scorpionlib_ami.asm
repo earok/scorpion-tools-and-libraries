@@ -94,7 +94,7 @@
 	name "PatchScorpion_MP","Multiplex AGA Scan2 Mask"
 
 	afunction byte
-		args byte
+		args long
 		libs
 		subs IsCD32Pad,0,0
 	name "IsCD32Pad","Port"  
@@ -194,3 +194,5 @@ _blitz_ahx_lib_finit:
 
   include "scorpionlib_ami_functions.asm"
   include "scorpionlib_ami_functions_trackdisk.asm"
+  include "scorpionlib_readjoypad.asm"
+
