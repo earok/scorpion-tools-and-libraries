@@ -106,7 +106,10 @@ POTGO_RESET = $FF00  	; was $FFFF but changed, thanks to robinsonb5@eab
 	rts
 
 ;Read CD32 pad. D0 is port
-IsCD32Pad
+IsCD32Pad ;Ignore first read
+	bsr .detect
+	bsr	.wvbl
+
 .detect
 		movem.l	d1-d5/a0-a1,-(a7)
 	
