@@ -95,7 +95,7 @@ POTGO_RESET = $FF00  	; was $FFFF but changed, thanks to robinsonb5@eab
 ;    movem.l (a7)+,d0/a0
 ;	rts
 
-.wvbl:
+wvbl:
 	; wait for VBL
 	lea	$DFF000,a0
 	move.w	#$7FFF,intreq(a0)
@@ -108,7 +108,7 @@ POTGO_RESET = $FF00  	; was $FFFF but changed, thanks to robinsonb5@eab
 ;Read CD32 pad. D0 is port
 IsCD32Pad ;Ignore first read
 	bsr .detect
-	bsr	.wvbl
+	bsr	wvbl
 
 .detect
 		movem.l	d1-d5/a0-a1,-(a7)
