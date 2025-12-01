@@ -185,6 +185,18 @@
     subs _td_motoroff,0,0
   name "TD_MotorOff",""
 
+ astatement
+    args
+    libs
+    subs _octodapter_Init,0,0
+  name "Octodapter_Init",""
+
+ afunction byte
+    args byte
+    libs
+    subs _octodapter_Read,0,0
+  name "Octodapter_Read","Joynumber 0-7"
+
 blitz_finit:
 	nullsub _blitz_ahx_lib_finit,0,0
 	libfin
@@ -195,4 +207,4 @@ _blitz_ahx_lib_finit:
   include "scorpionlib_ami_functions.asm"
   include "scorpionlib_ami_functions_trackdisk.asm"
   include "scorpionlib_readjoypad.asm"
-
+  include "scorpionlib_octodapter.asm"
