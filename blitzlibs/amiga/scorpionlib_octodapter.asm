@@ -6,8 +6,8 @@ _octodapter_Init
 
 ;D0.b = port to read 0-7, does not include main Amiga joystick ports. Returns joystick state in D0.b
 _octodapter_Read
-    and.b #$F8, $BFD000
-    or.b  d0, $BFD000
+    and.b #$F8,$BFD000
+    or.b  d0,$BFD000
     move.b $bfe101,d0   ; the input of the adressed joyport
     not.b d0	        ; invert the input so that a logical 1 is pressed
 
