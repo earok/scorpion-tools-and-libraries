@@ -25,7 +25,13 @@
   args          long,word,word
   libs
   subs          SE_Neo_SpriteBatch,0,0    
-  name          "SE_Neo_SpriteBatch","Mem Address","VDP Address","Count"
+  name          "SE_Neo_SpriteBatch","Mem Address,VDP Address,Count"
+
+  astatement
+  args          long,word,word,word
+  libs
+  subs          SE_Neo_SpriteBatchTilePalette,0,0    
+  name          "SE_Neo_SpriteBatchTilePalette","Mem Address,VDP Address,Count,PaletteLineIncrease"
 
   astatement
   args          word,word
