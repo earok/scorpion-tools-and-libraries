@@ -381,7 +381,10 @@ SE_MD_Scroll_Line:
 ;FirstEntry.w=D2
 ;NumberOfEntries.w=D3
 ;Destination.l=D4
+;LUT = D5
 SE_MD_FadePalette  
+
+	Move.l A4,-(A7)
 
 	TST.w D3
 	BEQ FadeEnd
@@ -397,6 +400,7 @@ SE_MD_FadePalette
   Move.l D0,A0
   Move.l D0,A1
   Move.l D0,A2
+  Move.l D5,A4
 
   Add.l #256,A1
   Add.l #512,A2
@@ -425,12 +429,20 @@ FadeLoop
     Swap.w D1
     Swap.w D2    
 
-;    And.w #$e0,D0
-    And.w #$e0,D1
-    And.w #$e0,D2    
+	Move.b (A4,D0),D0
+	Move.b (A4,D1),D1
+	Move.b (A4,D2),D2
 
-    LSR.w #4,D0
-    LSL.w #4,D2
+    And.w #$e,D0
+    And.w #$e,D1
+    And.w #$e,D2    
+
+    LSL.w #4,D1
+    LSL.w #8,D2
+
+;    And.w #$e0,D0
+;    And.w #$e0,D1
+;    And.w #$e0,D2    
 
     Or.w D0,D2
     Or.w D1,D2
@@ -455,12 +467,27 @@ SetToFullColorLoop
     Move.b (A1)+,D1 ;green
     Move.b (A2)+,D2 ;Blue
 
-    And.w #$e0,D0
-    And.w #$e0,D1
-    And.w #$e0,D2    
+    And.w #$ff,D0
+    And.w #$ff,D1
+    And.w #$ff,D2    
 
-    LSR.w #4,D0
-    LSL.w #4,D2
+	Move.b (A4,D0),D0
+	Move.b (A4,D1),D1
+	Move.b (A4,D2),D2
+
+    And.w #$e,D0
+    And.w #$e,D1
+    And.w #$e,D2
+
+    LSL.w #4,D1
+    LSL.w #8,D2
+
+;    And.w #$e0,D0
+;    And.w #$e0,D1
+;    And.w #$e0,D2    
+
+ ;   LSL.w #4,D1
+ ;   LSL.w #8,D2
 
     Or.w D0,D2
     Or.w D1,D2
@@ -470,6 +497,7 @@ SetToFullColorLoop
 
 FadeEnd
 	MoveQ #-1,D0 ;Force the loading of the dirty state
+	Move.l (A7)+,A4
     RTS
 
 SramLock:   equ $A130F1  ; Write 1 to unlock SRAM

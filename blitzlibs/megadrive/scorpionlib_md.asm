@@ -61,10 +61,10 @@
   name "SE_MD_VWait","MD_VWait [frames] Waits for the next vertical blank"	
 	
   afunction word
-    args long,quick,word,word,long
+    args long,quick,word,word,long,long
     libs
     subs SE_MD_FadePalette,0,0    
-	name "SE_MD_FadePalette","*SPalette.Scorpion_Interface,Amount.q,FirstEntry.w,NumberOfEntries.w,Destination.l"        
+	name "SE_MD_FadePalette","*SPalette.Scorpion_Interface,Amount.q,FirstEntry.w,NumberOfEntries.w,Destination.l,LUT.l"        
 
   astatement
     args word,word ;,word,word
