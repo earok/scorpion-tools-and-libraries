@@ -429,25 +429,22 @@ FadeLoop
     Swap.w D1
     Swap.w D2    
 
-	Move.b (A4,D0),D0
-	Move.b (A4,D1),D1
-	Move.b (A4,D2),D2
+	;Red
+	Lsr.w #$4,D0
+    And.w #$f,D0
 
-    And.w #$e,D0
-    And.w #$e,D1
-    And.w #$e,D2    
+	;Green
+    And.w #$f0,D1
 
-    LSL.w #4,D1
-    LSL.w #8,D2
+	;Blue
+    LSL.w #$4,D2
+    And.w #$f00,D2
 
-;    And.w #$e0,D0
-;    And.w #$e0,D1
-;    And.w #$e0,D2    
+    Or.w D1,D0
+    Or.w D2,D0
+	Lsl.w #1,D0
 
-    Or.w D0,D2
-    Or.w D1,D2
-
-    move.w D2,(A3)+
+    move.w (A4,D0),(A3)+
     DBra D7,FadeLoop
     Bra FadeEnd
 
@@ -467,32 +464,22 @@ SetToFullColorLoop
     Move.b (A1)+,D1 ;green
     Move.b (A2)+,D2 ;Blue
 
-    And.w #$ff,D0
-    And.w #$ff,D1
-    And.w #$ff,D2    
+	;Red
+	Lsr.w #$4,D0
+    And.w #$f,D0
 
-	Move.b (A4,D0),D0
-	Move.b (A4,D1),D1
-	Move.b (A4,D2),D2
+	;Green
+    And.w #$f0,D1
 
-    And.w #$e,D0
-    And.w #$e,D1
-    And.w #$e,D2
+	;Blue
+    LSL.w #$4,D2
+    And.w #$f00,D2
 
-    LSL.w #4,D1
-    LSL.w #8,D2
+    Or.w D1,D0
+    Or.w D2,D0
+	Lsl.w #1,D0
 
-;    And.w #$e0,D0
-;    And.w #$e0,D1
-;    And.w #$e0,D2    
-
- ;   LSL.w #4,D1
- ;   LSL.w #8,D2
-
-    Or.w D0,D2
-    Or.w D1,D2
-
-    move.w D2,(A3)+
+    move.w (A4,D0),(A3)+
     DBra D7,SetToFullColorLoop
 
 FadeEnd
