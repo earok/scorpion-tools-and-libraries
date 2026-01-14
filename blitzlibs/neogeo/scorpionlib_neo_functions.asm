@@ -62,7 +62,7 @@ SE_Neo_SpriteX
 
 ;This version applies a custom palette increase
 ;D0 = Source address (long)
-;D1 = VDP address (word)
+;D1 = VDP address (word) (not left shifted)
 ;D2 = Count (word)
 ;D3 = Palette address (offset)
 SE_Neo_SpriteBatchTilePalette
@@ -71,6 +71,7 @@ SE_Neo_SpriteBatchTilePalette
 
   lea.l        VRAM_BASE,A0
   move.l       D0,A1
+  lsl.w        #6,D1
   move.w       D1,VRAM_ADDRESS(A0)
   move.w       #1,VRAM_MOD(A0)  
 
@@ -80,6 +81,26 @@ SpriteBatchTilePaletteLoop
   Add.w       D3,D0 ;Increase by the palette line
   Move.w      D0,(A0)
   dbra        D2,SpriteBatchTilePaletteLoop
+
+  rts
+
+;D0 = Source address (long)
+;D1 = VDP address (word) (not left shifted)
+;D2 = Count (word)
+SE_Neo_SpriteBatchTile
+  subq.w       #1,D2
+  blt          SpriteBatchCancel ;Zero or less to do
+
+  lea.l        VRAM_BASE,A0
+  move.l       D0,A1
+  lsl.w        #6,D1
+  move.w       D1,VRAM_ADDRESS(A0)
+  move.w       #1,VRAM_MOD(A0)  
+
+SpriteBatchTileLoop
+  Move.w      (A1)+,(A0) ;Even address
+  Move.w      (A1)+,(A0) ;Odd address
+  dbra        D2,SpriteBatchTileLoop
 
   rts
 

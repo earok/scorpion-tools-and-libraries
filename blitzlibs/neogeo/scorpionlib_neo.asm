@@ -28,6 +28,12 @@
   name          "SE_Neo_SpriteBatch","Mem Address,VDP Address,Count"
 
   astatement
+  args          long,word,word
+  libs
+  subs          SE_Neo_SpriteBatchTile,0,0    
+  name          "SE_Neo_SpriteBatchTile","Mem Address,VDP Address,Count"
+
+  astatement
   args          long,word,word,word
   libs
   subs          SE_Neo_SpriteBatchTilePalette,0,0    
