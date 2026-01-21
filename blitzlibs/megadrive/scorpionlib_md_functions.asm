@@ -171,7 +171,7 @@ PSGData:
    dc.w $9fbf,$dfff
       
 VDPRegisters:
-	dc.b $14 ; 0: H interrupt on, palettes on
+	dc.b $04 ; 0: H interrupt off, palettes on
 	dc.b $74 ; 1: V interrupt on, display on, DMA on, Genesis mode on
 	dc.b $30 ; 2: Pattern table for Scroll Plane A at VRAM $C000 (bits 3-5 = bits 13-15)
 	dc.b $00 ; 3: Pattern table for Window Plane at VRAM $0000 (disabled) (bits 1-5 = bits 11-15)

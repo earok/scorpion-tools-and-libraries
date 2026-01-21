@@ -477,6 +477,8 @@ SE_Limit_Skip:
 SE_Limit_Skip2
  RTS
 
+;D0 = Address in memory of the seed
+;D1 = The number to multiply by (eg 6 for a 6 sided dice)
 SE_XORSHIFT2
   Move.w D1,D7
   JSR SE_XORSHIFT
