@@ -1,3 +1,8 @@
+;Memory allocation
+HBlank equ $FF0000
+MemWorkArea equ HBlank+8 ;Eight bytes for the Raster Effects area
+MemFreeStart equ MemWorkArea+1064 ;Start of the memory free for allocations, including 1064 bytes for MDSDRV work area
+
 VDP_CONTROL	equ	$00C00004
 VDP_DATA	equ $00C00000
 VRAM_ADDR_CMD:  equ $40000000
@@ -146,11 +151,15 @@ Clear:
 	movem.l (a0),d0-d7/a1-a6  ; Multiple move zero to all registers
 	move.l #$00000000,a0     ; Clear a0
 
-	;Reset the Blitz Basic stack???
+	;Reset the Blitz Basic stack??? Need to look more deeply into this
 	Move.l #$FF1008,$00FF1000
 	Clr.l $00FF1004
 	Clr.l $00FF1008	
 	Move.l #$DFF8,$00FF100C	
+
+	;Also write RTE to the top of memory for raster effects, also later on as a return after
+	Move.w #$4E73,HBlank
+	Move.w #$4E73,HBlank+6
 	RTS
 	
 ZEightyData:
@@ -196,10 +205,18 @@ VDPRegisters:
 	dc.b $00 ; 22: DMA source address mid byte
 	dc.b $80 ; 23: DMA source address hi byte, memory-to-VRAM mode (bits 6-7)
    	
-	
+
 SE_MD_Stop
 	Move #$2700,SR 	;Final setup steps ;DISABLE ALL INTERRUPTS
    	stop #$2700 ; Halt CPU
+
+SE_MD_HBlank_On
+	move.w #$8014,VDP_CONTROL 
+	RTS
+
+SE_MD_HBlank_Off
+	move.w #$8004,VDP_CONTROL 
+	RTS
 
 SE_MD_SetPlaneSize
 	lsl.w #4,D1
@@ -1142,7 +1159,7 @@ SE_MD_ModeRegister4
 	RTS
 	
 SE_MD_Fake_AllocMem:
-  LEA           $FF0428,A0 ;Eat memory from the top, excluding 1064 bytes to save space for audio drivers
+  Move.l           #MemFreeStart,A0 
 
 FakeAllocMem_Loop
   Tst.l         (A0)

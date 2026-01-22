@@ -18,6 +18,18 @@
   astatement
     args
     libs
+    subs SE_MD_HBlank_On,0,0		
+  name "SE_MD_HBlank_On",""
+
+  astatement
+    args
+    libs
+    subs SE_MD_HBlank_Off,0,0		
+  name "SE_MD_HBlank_Off",""
+
+  astatement
+    args
+    libs
     subs SE_MD_ClearVDP,0,0	
   name "SE_MD_ClearVDP","Clears the VDP (tiles,map,palette etc)"	
 
