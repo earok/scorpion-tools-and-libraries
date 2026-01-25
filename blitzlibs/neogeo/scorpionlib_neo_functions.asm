@@ -1,5 +1,11 @@
-HBlank equ $100000
+LineScrollHandler equ $100000
+HBlank equ LineScrollHandler+4
 MemStart equ HBlank+NeoHBlankHandlerEnd-NeoHBlankHandler+4
+CustomHBlank equ HBlank+NeoHBlankHandlerCustom-NeoHBlankHandler
+CustomHBlankLineScroll equ HBlank+NeoHBlankHandlerCustomLineScroll-NeoHBlankHandler
+
+OpCode_RTE equ $4E73
+OpCode_JSR equ $4EB9
 
 FIX_CLEAR equ $C004C2                       ; Clear Fix layer
 LSP_FIRST equ $C004C8 ; Clear SCB2-4, first SCB1 tilemap
@@ -28,11 +34,48 @@ STATUS_CURRENT equ 2
 
 TIMER_HIGH equ $3C0008
 TIMER_LOW equ $3C000A
+REG_LSPCMODE equ $3C0006
 
 NeoHBlankHandler
   move.w	#2,$3C000C			;LSPC_IRQ_ACK - ack. interrupt #2 (HBlank)
+NeoHBlankHandlerCustom
   rte
-  dc.l 0 ;Space to insert a jump (if the RTE above is set to JSR)
+  dc.l 0 ;Space to insert a jump (if the RTE above is set to JSR)  
+
+  ;Test our line scrol mode
+  tst.w (LineScrollHandler)
+
+  ;We have no line scroll mode set
+  beq NeoHBlankHandlerNoLine
+  blt NeoHBlankHandlerFirstLine ;if it's negative, we still need to configure it
+
+  move.l D0,-(A7)
+  move.w (REG_LSPCMODE),D0
+  LSR.w #7,D0
+  Cmp.w #$1EF,D0
+  bge NeoHBlankHandlerLastLine
+
+NeoHBlankHandlerCustomLineScroll
+  rte
+  dc.l 0 ;Space to insert a jump (if the RTE above is set to JSR)  
+  move.l (A7)+,D0
+  rte
+
+NeoHBlankHandlerLastLine
+;  move.w #$ffff,TIMER_HIGH
+;  move.w #$ffff,TIMER_LOW  
+;  move.w #$70,(REG_LSPCMODE) ;Enable and reset on timer set only
+  move.w #0,(LineScrollHandler)
+  move.l (A7)+,D0
+  rte
+
+NeoHBlankHandlerFirstLine
+  move.w #$F0,(REG_LSPCMODE) ;Enable and reset on timer set only
+  move.w #0,(TIMER_HIGH)
+  move.w #383,(TIMER_LOW)
+  move.w #1,(LineScrollHandler)
+
+NeoHBlankHandlerNoLine
   rte
 NeoHBlankHandlerEnd
 
@@ -82,6 +125,26 @@ SE_Neo_SpriteX
   move.w       D0,VRAM_ADDRESS(A0)
   Lsl.w        #7,D1
   move.w       D1,VRAM_WRITE(A0)
+  RTS
+
+;D0 = My custom vblank 
+;D1 = Set the timer
+SE_Neo_Custom_HBlank_On
+  Move.l D0,(CustomHBlank+2)
+  Move.w #OpCode_JSR,(CustomHBlank)
+  Move.w D1,(TIMER_LOW)
+  Swap D1
+  Move.w D1,(TIMER_HIGH)
+  RTS
+
+SE_Neo_Custom_HBlank_Off
+  Move.w #OpCode_RTE,(CustomHBlank)
+  RTS
+
+SE_Neo_Custom_HBlank_LineScroll
+  Move.l D0,(CustomHBlankLineScroll+2)
+  Move.w #OpCode_JSR,(CustomHBlankLineScroll)
+  Move.w #-1,(LineScrollHandler)
   RTS
 
 ;This version applies a custom palette increase

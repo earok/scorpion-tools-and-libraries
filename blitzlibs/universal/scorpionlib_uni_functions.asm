@@ -7,6 +7,10 @@ DoIllegal
 Finish
 	RTS
 
+Call
+  Move.l D0,A0
+  Jmp (A0) ;This will RTS back to the original place
+
 QMin
     Cmp.l d0,d1
     BGE Finish

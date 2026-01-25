@@ -63,6 +63,24 @@
   subs          SE_NEO_ClearVDP,0,0    
   name          "SE_NEO_ClearVDP",""      
 
+  astatement
+  args        long, long
+  libs
+  subs          SE_Neo_Custom_HBlank_On,0,0    
+  name          "SE_Neo_Custom_HBlank_On",""  
+
+  astatement
+  args        long
+  libs
+  subs          SE_Neo_Custom_HBlank_LineScroll,0,0    
+  name          "SE_Neo_Custom_HBlank_LineScroll","" 
+
+  astatement
+  args            
+  libs
+  subs          SE_Neo_Custom_HBlank_Off,0,0    
+  name          "SE_Neo_Custom_HBlank_Off","" 
+
   afunction     word
   args 
   libs

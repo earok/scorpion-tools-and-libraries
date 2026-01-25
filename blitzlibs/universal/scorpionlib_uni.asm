@@ -492,6 +492,11 @@
 		subs zx0_decompress,0,0
 	name "ZX0_Decompress","Source,Destination"
 
+	astatement
+		args long
+		libs
+		subs Call,0,0
+	name "Call","Destination"
 
 blitz_finit:
 	nullsub _blitz_ahx_lib_finit,0,0
