@@ -1,3 +1,6 @@
+HBlank equ $100000
+MemStart equ HBlank+NeoHBlankHandlerEnd-NeoHBlankHandler+4
+
 FIX_CLEAR equ $C004C2                       ; Clear Fix layer
 LSP_FIRST equ $C004C8 ; Clear SCB2-4, first SCB1 tilemap
 REG_STATUS_B equ $380000
@@ -23,9 +26,30 @@ BIOS_STATCURNT equ $10FDAC
 
 STATUS_CURRENT equ 2
 
+TIMER_HIGH equ $3C0008
+TIMER_LOW equ $3C000A
+
+NeoHBlankHandler
+  move.w	#2,$3C000C			;LSPC_IRQ_ACK - ack. interrupt #2 (HBlank)
+  rte
+  dc.l 0 ;Space to insert a jump (if the RTE above is set to JSR)
+  rte
+NeoHBlankHandlerEnd
+
+;Install the HBlank handler
+SE_NEO_Setup
+  Lea NeoHBlankHandler,A0
+  Move.l #HBlank,A1
+  Lea NeoHBlankHandlerEnd,A2
+neo_setup_loop
+  move.w (A0)+,(A1)+
+  Cmp.l a2,a0
+  bne neo_setup_loop
+  rts
+
 ;Fake version of Amiga's "Allocmem"
 SE_NEO_FakeAllocMem:
-  LEA           $100004,A0 ;Eat memory from the top, reserving a long word for Scorpion flags
+  Move.l           #MemStart,A0 ;Eat memory from the top (reserving a long word for Scorpion flags - still needed?)
 
 FakeAllocMem_Loop
   Tst.l         (A0)

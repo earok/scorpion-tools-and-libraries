@@ -2,7 +2,13 @@
 
   libheader     $13,0,0,blitz_finit,0
   ; BB2 library header
-	
+
+  astatement
+  args          
+  libs
+  subs          SE_NEO_Setup,0,0    
+  name          "SE_NEO_Setup",""        
+
   astatement
   args          
   libs
