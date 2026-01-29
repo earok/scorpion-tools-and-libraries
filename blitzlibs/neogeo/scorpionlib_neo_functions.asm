@@ -1,8 +1,9 @@
-LineScrollHandler equ $100000
-HBlank equ LineScrollHandler+4
+LineScrollStartLine equ $100000
+LineScrollSet equ LineScrollStartLine+4
+
+HBlank equ LineScrollSet+2
 MemStart equ HBlank+NeoHBlankHandlerEnd-NeoHBlankHandler+4
 CustomHBlank equ HBlank+NeoHBlankHandlerCustom-NeoHBlankHandler
-CustomHBlankLineScroll equ HBlank+NeoHBlankHandlerCustomLineScroll-NeoHBlankHandler
 
 OpCode_RTE equ $4E73
 OpCode_JSR equ $4EB9
@@ -38,45 +39,47 @@ REG_LSPCMODE equ $3C0006
 
 NeoHBlankHandler
   move.w	#2,$3C000C			;LSPC_IRQ_ACK - ack. interrupt #2 (HBlank)
+  tst.w (LineScrollSet)
+  beq NeoHBlankHandlerCustom
+
+  ;Line scrolling
+  movem.w D0-D2,-(A7)
+  move.w (REG_LSPCMODE),D0
+
+;  move.w       #$8401,(REG_VRAMRW)
+;  move.w       VRAM_RW,D1
+;  and.w        #$F800,D1 ;Wipe out the bottom bits
+;  move.w       D0,D2
+;  and.w        #$780,D2 ;Wipe out the top bits
+;  or.w         D1,D2
+;  add.w        D2,(VRAM_RW)
+
+  LSR.w #7,D0
+  cmp.w #$1EF,D0
+  bge NeoHBlankHandlerEndOfScreen  
+  Movem.w (A7)+,D0-D2
+  rte
+
+  ;If we get to here, we must be custom
 NeoHBlankHandlerCustom
   rte
-  dc.l 0 ;Space to insert a jump (if the RTE above is set to JSR)  
-
-  ;Test our line scrol mode
-  tst.w (LineScrollHandler)
-
-  ;We have no line scroll mode set
-  beq NeoHBlankHandlerNoLine
-  blt NeoHBlankHandlerFirstLine ;if it's negative, we still need to configure it
-
-  move.l D0,-(A7)
-  move.w (REG_LSPCMODE),D0
-  LSR.w #7,D0
-  Cmp.w #$1EF,D0
-  bge NeoHBlankHandlerLastLine
-
-NeoHBlankHandlerCustomLineScroll
-  rte
-  dc.l 0 ;Space to insert a jump (if the RTE above is set to JSR)  
-  move.l (A7)+,D0
-  rte
-
-NeoHBlankHandlerLastLine
-;  move.w #$ffff,TIMER_HIGH
-;  move.w #$ffff,TIMER_LOW  
-;  move.w #$70,(REG_LSPCMODE) ;Enable and reset on timer set only
-  move.w #0,(LineScrollHandler)
-  move.l (A7)+,D0
-  rte
-
-NeoHBlankHandlerFirstLine
-  move.w #$F0,(REG_LSPCMODE) ;Enable and reset on timer set only
+  dc.l 0 ;Space to insert a jump (if the RTE above is set to JSR)
+  move.w #1,(LineScrollSet)
+  move.w #$B0,(REG_LSPCMODE) ;Set to reload the timer when the below is set and also every cycle after that
   move.w #0,(TIMER_HIGH)
-  move.w #383,(TIMER_LOW)
-  move.w #1,(LineScrollHandler)
-
-NeoHBlankHandlerNoLine
+  move.w #383,(TIMER_LOW)  
   rte
+
+NeoHBlankHandlerEndOfScreen
+  move.w #$FFFF,(TIMER_HIGH) ;Set the timer to a really long time
+  move.w #$FFFF,(TIMER_LOW)
+  move.w #$50,(REG_LSPCMODE) ;Set to reload the timer ONLY on HBlank
+  move.w (LineScrollStartLine),(TIMER_HIGH)
+  move.w (LineScrollStartLine+2),(TIMER_LOW)
+  move.w #0,(LineScrollSet)
+  Movem.w (A7)+,D0-D2
+  rte
+
 NeoHBlankHandlerEnd
 
 ;Install the HBlank handler
@@ -132,19 +135,21 @@ SE_Neo_SpriteX
 SE_Neo_Custom_HBlank_On
   Move.l D0,(CustomHBlank+2)
   Move.w #OpCode_JSR,(CustomHBlank)
-  Move.w D1,(TIMER_LOW)
-  Swap D1
-  Move.w D1,(TIMER_HIGH)
+  move.l D1,(LineScrollStartLine)
+  move.w #$50,(REG_LSPCMODE) ;Set to reload the timer ONLY on HBlank
+  move.w (LineScrollStartLine),(TIMER_HIGH)
+  move.w (LineScrollStartLine+2),(TIMER_LOW)  
   RTS
 
 SE_Neo_Custom_HBlank_Off
+  move.w #$0,(REG_LSPCMODE) ;Set to reload the timer ONLY on HBlank
   Move.w #OpCode_RTE,(CustomHBlank)
   RTS
 
 SE_Neo_Custom_HBlank_LineScroll
-  Move.l D0,(CustomHBlankLineScroll+2)
-  Move.w #OpCode_JSR,(CustomHBlankLineScroll)
-  Move.w #-1,(LineScrollHandler)
+;  Move.l D0,(CustomHBlankLineScroll+2)
+;  Move.w #OpCode_JSR,(CustomHBlankLineScroll)
+;  Move.w #-1,(LineScrollHandler)
   RTS
 
 ;This version applies a custom palette increase
