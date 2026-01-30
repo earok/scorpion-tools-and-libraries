@@ -6,8 +6,8 @@
   astatement
   args          
   libs
-  subs          SE_NEO_Setup,0,0    
-  name          "SE_NEO_Setup",""        
+  subs          SE_Neo_Setup,0,0    
+  name          "SE_Neo_Setup",""        
 
   astatement
   args          
@@ -64,22 +64,22 @@
   name          "SE_NEO_ClearVDP",""      
 
   astatement
+  args          
+  libs
+  subs          SE_Neo_RefreshHBlank,0,0    
+  name          "SE_Neo_RefreshHBlank",""    
+
+  astatement
   args        long, long
   libs
-  subs          SE_Neo_Custom_HBlank_On,0,0    
-  name          "SE_Neo_Custom_HBlank_On",""  
+  subs          SE_Neo_Custom_HBlank,0,0    
+  name          "SE_Neo_Custom_HBlank","Custom hblank handler, Custom wave data"
 
   astatement
-  args        long
+  args        word,word
   libs
-  subs          SE_Neo_Custom_HBlank_LineScroll,0,0    
-  name          "SE_Neo_Custom_HBlank_LineScroll","" 
-
-  astatement
-  args            
-  libs
-  subs          SE_Neo_Custom_HBlank_Off,0,0    
-  name          "SE_Neo_Custom_HBlank_Off","" 
+  subs          SE_Neo_Custom_HBlank_Lines,0,0    
+  name          "SE_Neo_Custom_HBlank_Lines","Number of lines, Offset of first map sprite"
 
   afunction     word
   args 

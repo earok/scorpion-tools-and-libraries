@@ -1,9 +1,26 @@
-LineScrollStartLine equ $100000
-LineScrollSet equ LineScrollStartLine+4
+HBlank equ $100000
+NextHBlank equ HBlank+2
 
-HBlank equ LineScrollSet+2
-MemStart equ HBlank+NeoHBlankHandlerEnd-NeoHBlankHandler+4
-CustomHBlank equ HBlank+NeoHBlankHandlerCustom-NeoHBlankHandler
+;Timer hints for REG_LSPCMODE
+Timer_On equ $10
+Timer_On_Set equ $30
+Timer_On_Set_HBlank equ $70
+Timer_On_Set_Zero equ $b0
+Timer_On_Set_HBlank_Zero equ $f0
+
+Timer_On_HBlank equ $50
+Timer_On_HBlank_Zero equ $d0
+
+Timer_On_Zero equ $90
+
+Var_CustomHBlank equ NeoHBlankHandlerEnd-NeoHBlankHandler+HBlank ;Long, pointer to a custom user code HBlank handler
+Var_CustomTimer equ Var_CustomHBlank+4 ;Long, timer to reset to AFTER the first line is rendered
+Var_MapSprite equ Var_CustomTimer+4 ;Word, just the pointer to the X position of the map sprite in VRAM
+Var_CustomWave equ Var_MapSprite+2 ;Long, pointer to the custom wave data
+Var_CustomWavePosition equ Var_CustomWave+4 ;Long, pointer to the current read position of the wave data
+
+Var_EndOfVariables equ Var_CustomWavePosition+4
+MemStart equ Var_EndOfVariables
 
 OpCode_RTE equ $4E73
 OpCode_JSR equ $4EB9
@@ -17,9 +34,9 @@ VRAM_ADDRESS equ -2
 VRAM_WRITE equ 0 ;Since write operations are the most common, we'll use zero here
 VRAM_MOD equ 2
 
-REG_VRAMRW equ $3C0000
+REG_VRAMADDR equ $3C0000
 REG_VRAMMOD equ $3C0004
-VRAM_RW equ $3C0002
+REG_VRAMRW equ $3C0002
 
 REG_P1CNT equ $300000
 REG_P2CNT equ $340000
@@ -38,52 +55,59 @@ TIMER_LOW equ $3C000A
 REG_LSPCMODE equ $3C0006
 
 NeoHBlankHandler
-  move.w	#2,$3C000C			;LSPC_IRQ_ACK - ack. interrupt #2 (HBlank)
-  tst.w (LineScrollSet)
-  beq NeoHBlankHandlerCustom
-
-  ;Line scrolling
-  movem.w D0-D2,-(A7)
-  move.w (REG_LSPCMODE),D0
-
-;  move.w       #$8401,(REG_VRAMRW)
-;  move.w       VRAM_RW,D1
-;  and.w        #$F800,D1 ;Wipe out the bottom bits
-;  move.w       D0,D2
-;  and.w        #$780,D2 ;Wipe out the top bits
-;  or.w         D1,D2
-;  add.w        D2,(VRAM_RW)
-
-  LSR.w #7,D0
-  cmp.w #$1EF,D0
-  bge NeoHBlankHandlerEndOfScreen  
-  Movem.w (A7)+,D0-D2
-  rte
-
-  ;If we get to here, we must be custom
-NeoHBlankHandlerCustom
-  rte
-  dc.l 0 ;Space to insert a jump (if the RTE above is set to JSR)
-  move.w #1,(LineScrollSet)
-  move.w #$B0,(REG_LSPCMODE) ;Set to reload the timer when the below is set and also every cycle after that
-  move.w #0,(TIMER_HIGH)
-  move.w #383,(TIMER_LOW)  
-  rte
-
-NeoHBlankHandlerEndOfScreen
-  move.w #$FFFF,(TIMER_HIGH) ;Set the timer to a really long time
-  move.w #$FFFF,(TIMER_LOW)
-  move.w #$50,(REG_LSPCMODE) ;Set to reload the timer ONLY on HBlank
-  move.w (LineScrollStartLine),(TIMER_HIGH)
-  move.w (LineScrollStartLine+2),(TIMER_LOW)
-  move.w #0,(LineScrollSet)
-  Movem.w (A7)+,D0-D2
-  rte
-
+  dc.w $4EF9;Force no optimisation
+  dc.l HBlankHandler_Default
 NeoHBlankHandlerEnd
 
+;Run this at the start of the line
+HBlankHandler_LineStart
+  move.l #HBlankHandler_Custom,(NextHBlank)
+  move.w #Timer_On_Set,(REG_LSPCMODE)
+  move.w (Var_CustomTimer),(TIMER_HIGH)
+  move.w (Var_CustomTimer+2),(TIMER_LOW)  
+  bra.s HBlankHandler_Default
+
+HBlankHandler_Custom
+  ;Backup and restore A0
+  movem.l A0,-(A7)
+  move.l (Var_CustomHBlank),A0
+  jsr (A0)
+  movem.l (A7)+,A0
+  tst.l (Var_CustomWavePosition)
+  beq HBlankHandler_EndOfLine ;No custom wave, so turn off the timer
+  move.l #HBlankHandler_VScroll,(NextHBlank)
+  move.w #Timer_On_Set_Zero,(REG_LSPCMODE)
+  move.w #0,(TIMER_HIGH)
+  move.w #383,(TIMER_LOW)
+  bra HBlankHandler_Default
+
+HBlankHandler_EndOfLine
+  ;Turn off the timer
+  move.l #0,(Var_CustomWavePosition)
+  move.w #0,(REG_LSPCMODE)
+
+HBlankHandler_Default
+  move.w	#2,$3C000C			;LSPC_IRQ_ACK - ack. interrupt #2 (HBlank)
+  rte
+
+HBlankHandler_VScroll
+  movem.l A0/D0,-(A7)
+  move.w (Var_MapSprite),(REG_VRAMADDR)  
+  move.l (Var_CustomWavePosition),A0 ;Add timing gap between vram use
+  add.l #2,(Var_CustomWavePosition) ;Add timing gap between vram use
+  move.w (A0),(REG_VRAMRW)
+
+  ;Are we beyond the end of the screen?
+  move.w (REG_LSPCMODE),D0
+  lsr.w #7,D0
+  cmp.w #$1EE,D0
+  movem.l (A7)+,A0/D0  ;Does not affect condition codes
+
+  bge HBlankHandler_EndOfLine
+  bra HBlankHandler_Default
+
 ;Install the HBlank handler
-SE_NEO_Setup
+SE_Neo_Setup
   Lea NeoHBlankHandler,A0
   Move.l #HBlank,A1
   Lea NeoHBlankHandlerEnd,A2
@@ -130,27 +154,53 @@ SE_Neo_SpriteX
   move.w       D1,VRAM_WRITE(A0)
   RTS
 
-;D0 = My custom vblank 
-;D1 = Set the timer
-SE_Neo_Custom_HBlank_On
-  Move.l D0,(CustomHBlank+2)
-  Move.w #OpCode_JSR,(CustomHBlank)
-  move.l D1,(LineScrollStartLine)
-  move.w #$50,(REG_LSPCMODE) ;Set to reload the timer ONLY on HBlank
-  move.w (LineScrollStartLine),(TIMER_HIGH)
-  move.w (LineScrollStartLine+2),(TIMER_LOW)  
+;Configure the HBlank code to run at the start of the first visible line
+SE_Neo_RefreshHBlank  
+  tst.l (Var_CustomHBlank)
+  beq.s SE_Neo_RefreshHBlank_Off
+  move.l #HBlankHandler_LineStart,(NextHBlank)
+  move.w #Timer_On_Set,(REG_LSPCMODE)
+  move.w #0,(TIMER_HIGH)
+  move.w #(384*38-1),(TIMER_LOW) ;Wait for one line BEFORE the top of the screen
+  rts
+
+SE_Neo_RefreshHBlank_Off
+  Move.w #0,(REG_LSPCMODE)
+  rts
+
+;D0 = My custom vblank (false to turn off)
+;D1 = Wave data (false to turn off)
+SE_Neo_Custom_HBlank
+  Move.w #0,(REG_LSPCMODE) ;Just turn off the timer since RefreshHBlank will turn it back on
+  Move.l D0,(Var_CustomHBlank)
+  Move.l D1,(Var_CustomWave)
+  Move.l #$7FFFFFFF,(Var_CustomTimer)
   RTS
 
-SE_Neo_Custom_HBlank_Off
-  move.w #$0,(REG_LSPCMODE) ;Set to reload the timer ONLY on HBlank
-  Move.w #OpCode_RTE,(CustomHBlank)
-  RTS
+;D0 = Number of lines to wait
+SE_Neo_Custom_HBlank_Lines
 
-SE_Neo_Custom_HBlank_LineScroll
-;  Move.l D0,(CustomHBlankLineScroll+2)
-;  Move.w #OpCode_JSR,(CustomHBlankLineScroll)
-;  Move.w #-1,(LineScrollHandler)
-  RTS
+  ;Set the line wait
+  Move.w D0,D7
+  Mulu.w #384,D7
+  Add.l #383,D7 ;Add a single line since the wait starts from the line before rendering starts
+  Move.l D7,(Var_CustomTimer)
+
+  ;Set the target map sprite
+  Add.w #$8400,D1
+  Move.w D1,(Var_MapSprite)
+
+  ;Calculate the wave position offset
+  move.l (Var_CustomWave),D7
+  beq NoCustomWave
+  add.w D0,D0
+  add.l D0,D7
+  move.l D7,(Var_CustomWavePosition)
+  rts
+
+NoCustomWave
+  move.l #0,(Var_CustomWavePosition)
+  rts
 
 ;This version applies a custom palette increase
 ;D0 = Source address (long)
@@ -280,7 +330,7 @@ SE_Neo_ShrinkSprite
     ; returns in D0 the amount of "adjustment" to center on the x axis
 
     add.w   #$8000,d2
-    move.w  d2,REG_VRAMRW
+    move.w  d2,REG_VRAMADDR
     move.w  #1,REG_VRAMMOD
 
     cmp.b   #$ff,D0
@@ -312,7 +362,7 @@ SE_Neo_ShrinkSprite
     sub.w   #$F,D6 ;How many pixels were deleted?
     sub.w   D6,D7
 
-    move.w  d4,VRAM_RW
+    move.w  d4,REG_VRAMRW
     add.w   d2,d1      ; Accumulate error
     subq.b  #1,d3      ; Next sprite
     bne     .dzh
@@ -325,7 +375,7 @@ NoShrinkX
     or.w   #$F00,d1 ;Put full X width on the Y width we've already established
 
 NoShrinkXNext
-    move.w  d1,VRAM_RW
+    move.w  d1,REG_VRAMRW
     subq.b  #1,d3      ; Next sprite
     bne     NoShrinkXNext
 
