@@ -59,14 +59,6 @@ NeoHBlankHandler
   dc.l HBlankHandler_Default
 NeoHBlankHandlerEnd
 
-;Run this at the start of the line
-HBlankHandler_LineStart
-  move.l #HBlankHandler_Custom,(NextHBlank)
-  move.w #Timer_On_Set,(REG_LSPCMODE)
-  move.w (Var_CustomTimer),(TIMER_HIGH)
-  move.w (Var_CustomTimer+2),(TIMER_LOW)  
-  bra.s HBlankHandler_Default
-
 HBlankHandler_Custom
   ;Backup and restore A0
   movem.l A0,-(A7)
@@ -158,10 +150,11 @@ SE_Neo_SpriteX
 SE_Neo_RefreshHBlank  
   tst.l (Var_CustomHBlank)
   beq.s SE_Neo_RefreshHBlank_Off
-  move.l #HBlankHandler_LineStart,(NextHBlank)
+
+  move.l #HBlankHandler_Custom,(NextHBlank)
   move.w #Timer_On_Set,(REG_LSPCMODE)
-  move.w #0,(TIMER_HIGH)
-  move.w #(384*38-1),(TIMER_LOW) ;Wait for one line BEFORE the top of the screen
+  move.w (Var_CustomTimer),(TIMER_HIGH)
+  move.w (Var_CustomTimer+2),(TIMER_LOW)  
   rts
 
 SE_Neo_RefreshHBlank_Off
@@ -183,7 +176,7 @@ SE_Neo_Custom_HBlank_Lines
   ;Set the line wait
   Move.w D0,D7
   Mulu.w #384,D7
-  Add.l #383,D7 ;Add a single line since the wait starts from the line before rendering starts
+  Add.l #(384*39-1),D7 ;Add the gap from the top of the screen
   Move.l D7,(Var_CustomTimer)
 
   ;Set the target map sprite
