@@ -144,11 +144,23 @@
 	subs SE_MD_IsEAMultitap,0,0
   name "SE_MD_IsEAMultitap","Is an EA multitap present?"
 
-  afunction word
+  afunction byte
+	args byte
+	libs
+	subs SE_MD_IsSixButtons,0,0
+  name "SE_MD_IsSixButtons","Is this port a six button pad? Only check if we know for sure it's an actual joypad"
+
+  afunction byte
+	args byte
+	libs
+	subs SE_MD_GetDevice,0,0
+  name "SE_MD_GetDevice","0=Unknown 3=3 Button 6=6 Button"
+
+  afunction byte
 	args
 	libs
-	subs SE_MD_IsSegaMultitap,0,0
-  name "SE_MD_IsSegaMultitap","Is a Sega multitap present?"
+	subs SE_MD_IsPico,0,0
+  name "SE_MD_IsPico",""
 
   astatement
 	args long,long

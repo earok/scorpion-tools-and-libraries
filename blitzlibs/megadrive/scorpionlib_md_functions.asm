@@ -65,7 +65,7 @@ SE_MD_ClearVDP
     dbf     d1,@ClearVsram
 	RTS
 
-Is_Pico
+SE_MD_IsPico
 	Cmp.l #$20504943,$104 ;" PIC"
 	Seq.b D0
 	rts
@@ -543,7 +543,13 @@ ReturnTrue
 ReturnFalse
 	MoveQ #0,D0
 	RTS
-	
+
+SE_MD_VWait_Safe
+	MoveM.l A0-A1/D0-D1,-(A7)
+	jsr SE_MD_VWait
+	MoveM.l (A7)+,A0-A1/D0-D1
+	rts
+
 SE_MD_VWait
    MoveQ #1,D0
    
@@ -765,22 +771,108 @@ VDP_Copy_W
 
 VDP_COPY_DONE
 	RTS
-	
-;Test if a Sega Multitap is in player 1 port, and configure appropriately. Source Plutiedev
-SE_MD_IsSegaMultitap
-	lea IoData1,A0
-	bsr SE_MD_GetPeripheralId	
-	cmp.w #%0111,D0 ;Is this a multi tap
-	bne NotSega
 
-	;This is a multitap, so configure appropriately
-    move.b  #$60,IoCtrl1
-    move.b  #$60,IoData1
+	
+;0 = Port
+;A0 = IODATA
+;A1 = IOCTRL
+SE_MD_GetDevice
+	Lsl.b #1,D0
+	ext.w D0
+	ext.l D0
+	lea IoData1,A0
+	lea IoCtrl1,A1
+	add.l D0,A0
+	add.l D0,A1
+	MoveM.l A0-A1,-(A7) ;Preserve A0 and A1
+	bsr SE_MD_GetPeripheralId
+	MoveM.l (A7)+,A0-A1
+
+	;Test if it's a joypad
+	cmp.b #%1101,D0 
+	beq SE_MD_GetDevice_Joypad
+
+	cmp.b #%1100,D0 ;Edge case for six button pad
+	beq SE_MD_GetDevice_Joypad
+
+	cmp.b #%0111,D0
+	beq SE_MD_GetDevice_SegaMultitap
+
+	MoveQ #0,D0
+	rts
+
+SE_MD_GetDevice_SegaMultitap
+	move.b #60,(A1)
+	move.b #60,(A0)
 	MoveQ #-1,D0
+	rts
+
+;Assume we've only got three buttons. We should test for six on the next frame
+SE_MD_GetDevice_Joypad
+	moveq #3,D0
 	RTS
 
-NotSega
-	MoveQ #0,D0
+;0 = Port
+;A0 = IODATA
+;A1 = IOCTRL
+SE_MD_IsSixButtons
+	Lsl.b #1,D0
+	ext.w D0
+	ext.l D0
+	lea IoData1,A0
+	lea IoCtrl1,A1
+	add.l D0,A0
+	add.l D0,A1	
+    FastPauseZ80
+	move.b	#$40,(A1)	; TH pin to write, others to read
+	move.b	#$40,(A0)	; TH to 1 ;STEP 1
+	nop
+	nop
+	nop
+	nop	
+	move.b	(A0),d0
+	andi.b	#$3F,d0		; d0 = 00CBRLDU
+	moveq	#0,d1
+	move.b	#0,(A0)	; TH to 0 ;STEP 2
+	nop
+	nop
+	nop
+	nop	
+	move.b	(A0),d1
+	andi.b	#$30,d1		; d1 = 00SA0000
+	lsl.b	#2,d1		; d1 = SA000000
+	or.b	d1,d0		; d0 = SACBRLDU
+	moveq	#0,d1
+	move.b	#$40,(A0) ; TH to 1 ;STEP 3
+	nop
+	nop
+	nop
+	nop	
+	move.b	#0,(A0)	; TH to 0 ;STEP 4
+	nop
+	nop
+	nop
+	nop
+	move.b	#$40,(A0) ; TH to 1 ;STEP 5
+	nop
+	nop
+	nop
+	nop
+	move.b	#0,(A0)	; TH to 0 ;STEP 6
+	nop
+	nop
+	nop
+	nop			
+	;Check if we ACTUALLY have a six button 
+	move.b (A0),d1
+	ResumeZ80
+	and.b #$f,d1
+	bne SE_MD_IsSixButtons_False
+	moveq #6,D0
+	RTS
+
+SE_MD_IsSixButtons_False
+	moveq #3,D0
 	RTS
 
 ;Detect if there's an EA multitap
@@ -1032,6 +1124,24 @@ ReadSegaNibble:
     moveq   #-1,d0
     rts	
 	
+;A0 must be iodata
+;SE_MD_GetPeripheralId:
+
+	;Repeat until two consecutive reads agree
+;	MoveQ #0,D7
+
+;Repeat
+;	Bsr SE_MD_VWait_Safe
+;	Bsr SE_MD_GetPeripheralId_Inner
+;	Cmp.w D7,D0
+;	Beq Done
+;	Move.w D0,D7
+;	Bra Repeat
+
+
+;Done
+;	rts
+
 SE_MD_GetPeripheralId:
     ; Make sure pin direction is
     ; set correctly for this
