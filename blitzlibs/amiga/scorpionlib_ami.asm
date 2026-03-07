@@ -197,6 +197,18 @@
     subs _octodapter_Read,0,0
   name "Octodapter_Read","Joynumber 0-7"
 
+ astatement
+    args
+    libs
+    subs _dynablaster_Init,0,0
+  name "Dynablaster_Init",""
+
+ afunction byte
+    args byte
+    libs
+    subs _dynablaster_read,0,0
+  name "Dynablaster_Read","Joynumber 0-1"
+
 blitz_finit:
 	nullsub _blitz_ahx_lib_finit,0,0
 	libfin
