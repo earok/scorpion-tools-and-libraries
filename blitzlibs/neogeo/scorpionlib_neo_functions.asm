@@ -14,6 +14,8 @@ Timer_On_HBlank_Zero equ $d0
 
 Timer_On_Zero equ $90
 
+Timer_Mask equ $FF08
+
 Var_CustomHBlank equ NeoHBlankHandlerEnd-NeoHBlankHandler+HBlank ;Long, pointer to a custom user code HBlank handler
 Var_CustomTimer equ Var_CustomHBlank+4 ;Long, timer to reset to AFTER the first line is rendered
 Var_MapSprite equ Var_CustomTimer+4 ;Word, just the pointer to the X position of the map sprite in VRAM
@@ -68,18 +70,25 @@ HBlankHandler_Custom
   movem.l (A7)+,A0
   tst.l (Var_CustomWavePosition)
   beq HBlankHandler_EndOfLine ;No custom wave, so turn off the timer
-  move.l #HBlankHandler_VScroll,(NextHBlank)
-  move.w #Timer_On_Set_Zero,d0
-  or.w (AutoAnimTimer),d0
+  move.l #HBlankHandler_VScroll,(NextHBlank)  
+  movem.l D0,-(A7)
+  move.w (AutoAnimTimer),d0  
+  and.w #Timer_Mask,D0
+  or.w #Timer_On_Set_Zero,d0  
   move.w d0,(REG_LSPCMODE)
+  movem.l (A7)+,D0
   move.w #0,(TIMER_HIGH)
   move.w #383,(TIMER_LOW)
   bra HBlankHandler_Default
 
 HBlankHandler_EndOfLine
   ;Turn off the timer
+  movem.l D0,-(A7)
   move.l #0,(Var_CustomWavePosition)
-  move.w (AutoAnimTimer),(REG_LSPCMODE)
+  move.w (AutoAnimTimer),D0
+  and.w #Timer_Mask,D0
+  move.w D0,(REG_LSPCMODE)
+  movem.l (A7)+,D0
 
 HBlankHandler_Default
   move.w	#2,$3C000C			;LSPC_IRQ_ACK - ack. interrupt #2 (HBlank)
@@ -103,7 +112,7 @@ HBlankHandler_VScroll
 
 ;Install the HBlank handler
 SE_Neo_Setup
-  move.b #9,(AutoAnimTimer) ;10 frames is a sensible default, 1 frame isn't useful in almost any game
+  move.w #$900,(AutoAnimTimer) ;10 frames is a sensible default, 1 frame isn't useful in almost any game
   Lea NeoHBlankHandler,A0
   Move.l #HBlank,A1
   Lea NeoHBlankHandlerEnd,A2
@@ -156,21 +165,26 @@ SE_Neo_RefreshHBlank
   beq.s SE_Neo_RefreshHBlank_Off
 
   move.l #HBlankHandler_Custom,(NextHBlank)
-  move.w #Timer_On_Set,d0
-  or.w (AutoAnimTimer),d0
+  move.w (AutoAnimTimer),d0
+  and.w #Timer_Mask,d0  
+  or.w #Timer_On_Set,d0
   move.w d0,(REG_LSPCMODE)
   move.w (Var_CustomTimer),(TIMER_HIGH)
   move.w (Var_CustomTimer+2),(TIMER_LOW)  
   rts
 
 SE_Neo_RefreshHBlank_Off
-  Move.w (AutoAnimTimer),(REG_LSPCMODE)
+  Move.w (AutoAnimTimer),D0
+  and.w #Timer_Mask,d0  
+  Move.w d0,(REG_LSPCMODE)
   rts
 
 ;D0 = My custom vblank (false to turn off)
 ;D1 = Wave data (false to turn off)
 SE_Neo_Custom_HBlank
-  Move.w (AutoAnimTimer),(REG_LSPCMODE) ;Just turn off the timer since RefreshHBlank will turn it back on
+  Move.w (AutoAnimTimer),d7
+  and.w #Timer_Mask,d7  
+  Move.w d7,(REG_LSPCMODE) ;Just turn off the timer since it'll be turned back on elsewhere
   Move.l D0,(Var_CustomHBlank)
   Move.l D1,(Var_CustomWave)
   Move.l #$7FFFFFFF,(Var_CustomTimer)
