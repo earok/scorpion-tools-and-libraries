@@ -259,6 +259,21 @@ SpriteBatchTileLoop
 
   rts
 
+;D0 = Value to set (word)
+;D1 = VDP address (word)
+;D2 = Count (word)
+SE_Neo_SpriteBatchSet
+  subq.w       #1,D2
+  blt          SpriteBatchCancel ;Zero or less to do
+  lea.l        VRAM_BASE,A0
+  move.w       D1,VRAM_ADDRESS(A0)
+  move.w       #1,VRAM_MOD(A0)
+
+SpriteBatchSetLoop
+  Move.w      D0,(A0)
+  dbra        D2,SpriteBatchLoop
+  rts
+
 ;D0 = Source address (long)
 ;D1 = VDP address (word)
 ;D2 = Count (word)
