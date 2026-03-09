@@ -347,7 +347,7 @@ read_third_button
         subq.l  #2,d4   ; shift from DAT*Y to DAT*X
         btst	d4,potinp(a0)	;check third button
         bne.b   no_further_button_test
-        or.l    #$00020000,d7
+        or.l    #$00010000,d7
         bra.b   no_further_button_test
        
 ;==========================================================================

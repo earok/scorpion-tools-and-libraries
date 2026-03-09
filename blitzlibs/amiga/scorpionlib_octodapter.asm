@@ -17,12 +17,6 @@ _octodapter_Read
     or.b  d0,CIAB_pra
     move.b CIAA_prb,d0   ; the input of the adressed joyport
     not.b d0	        ; invert the input so that a logical 1 is pressed
-
-    ;We also want to copy bit 6->7 to be compatible with Scorpion's implementation of button 3
-    move.b d0,d1    
-    lsl.b #1,d1
-    and.b #$80,d1
-    or.b d1,d0
     rts
 
 ciab_read
@@ -66,3 +60,10 @@ _dynablaster4
     move.b d7,d0 
     or.b d6,d0
     rts
+
+
+    ;We also want to copy bit 6->7 to be compatible with Scorpion's implementation of button 3
+;    move.b d0,d1    
+;    lsl.b #1,d1
+;    and.b #$80,d1
+;    or.b d1,d0
