@@ -1,5 +1,4 @@
 BlockDataSize equ 68 ;Need to round this down to 64
-BlockSlope equ 3
 
 DoIllegal
   ILLEGAL
