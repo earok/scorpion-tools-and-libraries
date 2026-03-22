@@ -546,22 +546,6 @@ DoMaskBlit2
   Move.w (A0),(A2) ;StartBlit = 58
   RTS
   
-;BLTCON0 equ $40;($DFF040 - BlitterBase)
-;BLTCON1 equ $42;($DFF042 - BlitterBase)
-;BLTAFWM equ $44;($DFF044 - BlitterBase)
-
-;BLTAMOD equ $64;($DFF064 - BlitterBase)
-;BLTBMOD equ $62;($DFF062 - BlitterBase)
-;BLTCMOD equ $60;($DFF060 - BlitterBase)
-;BLTDMOD equ $66;($DFF066 - BlitterBase)
-
-;BLTAPTH equ $50;($DFF050 - BlitterBase)
-;BLTBPTH equ $4c;($DFF04C - BlitterBase)
-;BLTCPTH equ $48;($DFF048 - BlitterBase)
-;BLTDPTH equ $54;($DFF054 - BlitterBase)
-
-;BLTSIZE equ $58;($DFF058 - BlitterBase)
-
 DoMaskBlit2FirstWordMask
   Move.l #12345678,A0
   Lea CustomBase,A2
