@@ -256,13 +256,6 @@
 	subs SE_QFrac,0,0
   name "SE_QFrac","Quick"
 
-;Word minimum
-  afunction word
-	args long,long
-	libs
-	subs WMin,0,0
-  name "WMin","A,B"
-
 ;Convert quick to int
   afunction word
 	args quick
@@ -324,10 +317,17 @@
 
 ;Get the maximum of two words
   afunction word
-	args long,long
+	args word,word
 	libs
 	subs WMax,0,0
   name "WMax","A,B"
+
+;Word minimum
+  afunction word
+	args word,word
+	libs
+	subs WMin,0,0
+  name "WMin","A,B"  
 
 ;Faster version of putreg (long)
   afunction long

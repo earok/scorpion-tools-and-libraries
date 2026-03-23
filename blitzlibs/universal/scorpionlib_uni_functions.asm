@@ -231,16 +231,16 @@ ExitDownRight
     RTS
 
 WMin
-  Cmp.l d0,d1
+  Cmp.w d0,d1
   BGE MinExit
-  Move.l d1,d0
+  Move.w d1,d0
 MinExit
   RTS
 
 WMax
-    Cmp.l d0,d1
+    Cmp.w d0,d1
     BLE MaxExit
-    Move.l d1,d0
+    Move.w d1,d0
 MaxExit
 	RTS
 
