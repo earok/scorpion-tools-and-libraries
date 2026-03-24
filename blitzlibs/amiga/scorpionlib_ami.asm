@@ -75,12 +75,6 @@
     subs DoMaskTileBlit,0,0
   name "DoMaskTileBlit","source.l,dest.l,tilesize.w,mask.l,ScreenModulo.w"  
 
-;	astatement
-   ; args long,long,word,word,word
-  ;  libs
- ;   subs DoBlockScroll,0,0
-;  name "DoBlockScroll","source.l,dest.l,Width.w,ScreenModulo.w,size.w"  
-
 	astatement
 		args long, word, word, byte
 		libs
