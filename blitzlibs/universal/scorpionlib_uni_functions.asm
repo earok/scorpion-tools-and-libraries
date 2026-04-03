@@ -751,6 +751,13 @@ SE_QFrac
   And.l #$0000FFFF,D0
   RTS
 
+SqrRootQ
+  lsr.l #4,D0 ;Shift right by 4
+  bsr SqrRoot
+  lsl.l #4,D0  ; shift left 4 (back to 16.16 scale)
+  lsl.l #6,D0  ; shift left 6
+  rts
+
 SqrRoot
 lsqrt   tst.l d0        (4)     ; skip doing zero.
         beq.s done      (10/8)
@@ -997,6 +1004,10 @@ FixDownRightAcceleration_ResultNotAtLimit
   Move.l D3,D0
   RTS
 
+SE_BottomSnap
+  And.l #$FFF00000,D0
+  Add.l #$000FFFFF,D0
+  RTS
 
 ;  unzx0_68000.s - ZX0 decompressor for 68000 - 88 bytes
 ;

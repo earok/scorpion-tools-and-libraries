@@ -329,6 +329,13 @@
 	subs WMin,0,0
   name "WMin","A,B"  
 
+;Word minimum
+  afunction quick
+	args quick
+	libs
+	subs SE_BottomSnap,0,0
+  name "SE_BottomSnap","Snaps to the very bottom/right of a tile"  
+
 ;Faster version of putreg (long)
   afunction long
     args
@@ -467,6 +474,11 @@
     subs SqrRoot,0,0
     name "SqrRoot",""
 
+  afunction quick
+    args quick
+    libs
+    subs SqrRootQ,0,0
+    name "SqrRootQ",""
 
 	afunction quick
 		args quick,quick,quick
