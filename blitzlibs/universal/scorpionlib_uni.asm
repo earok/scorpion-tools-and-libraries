@@ -75,7 +75,10 @@
     subs 0,0,0		
     args long,long,long,long,long,long
     libs
-    subs 0,0,0		
+    subs 0,0,0		  
+    args long,long,long,long,long,long,long
+    libs
+    subs 0,0,0		      
   name "GetRegsFast","Variable,..;Put Variables to d0-d6 a2 =Newtypeaddr ???"
 
 ;Used for inline ASM on lists

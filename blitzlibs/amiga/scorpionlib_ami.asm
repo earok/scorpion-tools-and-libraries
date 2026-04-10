@@ -203,6 +203,13 @@
     subs _dynablaster_read,0,0
   name "Dynablaster_Read","Joynumber 0-1"
 
+;Used for inline ASM on lists
+  astatement
+    args long,long,long,long,long,quick,quick
+    libs
+    subs 0,0,0
+  name "Prepare_Floor_Render",""
+
 blitz_finit:
 	nullsub _blitz_ahx_lib_finit,0,0
 	libfin
