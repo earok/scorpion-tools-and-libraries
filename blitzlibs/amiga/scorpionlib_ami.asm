@@ -205,7 +205,7 @@
 
 ;Used for inline ASM on lists
   astatement
-    args long,long,long,long,long,quick,quick
+    args long,long,long,long,long,quick,quick;,quick
     libs
     subs 0,0,0
   name "Prepare_Floor_Render",""
