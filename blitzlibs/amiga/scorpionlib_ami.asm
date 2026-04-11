@@ -205,10 +205,10 @@
 
 ;Used for inline ASM on lists
   astatement
-    args long,long,long,long,long,quick,quick;,quick
+    args long,long,long,long,long,long
     libs
     subs 0,0,0
-  name "Prepare_Floor_Render",""
+  name "Prepare_Road_Render",""
 
 blitz_finit:
 	nullsub _blitz_ahx_lib_finit,0,0
