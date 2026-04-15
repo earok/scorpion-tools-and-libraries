@@ -6,11 +6,18 @@ DoIllegal
 Finish
 	RTS
 
-  ;Probably want to make an inline version of this with no RTS...
-  ;D0 = TO
-  ;D1 = FROM
-  ;D2 = T
 SE_CurveLerp
+  Move.w D1,D2 ;Preserve D2 (only fraction) for later
+  Swap.w D1 ;Get the whole number portion of
+  Add.w D1,D1 ;Double the number (word offset)
+  Ext.l D1 ;Extend to long
+  Add.l D1,D0
+
+  ;Put the lookup table to A0
+  Move.l D0,A0
+  Move.w (A0),D0
+  Move.w -2(A0),D1
+
   Sub.w D1,D0 ;Subtract the FROM from TO    
   BLT SE_CurveLerp_Neg
   Mulu.w D2,D0 ;Multiply the fraction with the remaining amount  
@@ -774,7 +781,7 @@ linkitem:                      ;link item in a1 after a2
   MOVE.l a3,(a1)
   RTS
 
-;Throw out the top 16 bits
+;Throw out the top 16 bits (we don't extend because we want the top to be blank)
 SE_QFrac
   And.l #$0000FFFF,D0
   RTS
