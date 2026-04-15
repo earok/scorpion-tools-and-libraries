@@ -6,6 +6,34 @@ DoIllegal
 Finish
 	RTS
 
+  ;Probably want to make an inline version of this with no RTS...
+  ;D0 = TO
+  ;D1 = FROM
+  ;D2 = T
+SE_CurveLerp
+  Sub.w D1,D0 ;Subtract the FROM from TO    
+  BLT SE_CurveLerp_Neg
+  Mulu.w D2,D0 ;Multiply the fraction with the remaining amount  
+  Swap D0 ;Put the high bits back to low
+  Add.w D1,D0 ;Put the FROM back on to TO
+  Swap D0 ;Back to quick
+  Asl.l #7,D0
+  Swap D0 ;Back to word
+  RTS
+
+SE_CurveLerp_Neg ;Since we want to do unsigned multiplication, we flip the sign
+  Neg.w D0
+  Mulu.w D2,D0 ;Multiply the fraction with the remaining amount  
+  Neg.l D0
+
+  Swap D0 ;Put the high bits back to low
+  Add.w D1,D0 ;Put the FROM back on to TO
+  Swap D0 ;Back to quick
+  Asl.l #7,D0
+  Swap D0 ;Back to word
+  RTS
+
+
 Call
   Move.l D0,A0
   Jmp (A0) ;This will RTS back to the original place

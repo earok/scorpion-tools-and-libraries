@@ -161,6 +161,12 @@
     subs 0,0,0
   name "AreNotOnSameTileSetup","Tile1 Tile2 Distance"
 
+  afunction word
+    args word,word,quick
+    libs
+    subs SE_CurveLerp,0,0
+  name "SE_CurveLerp","to,from,lerp; Note the order, to first for efficiency with D0"
+
 ;Gets a look direction, converting X and Y values into a single direction
   afunction byte
 	args quick,quick
