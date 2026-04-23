@@ -2,6 +2,9 @@
 Scorpion_SpriteData equ 84
 Scorpion_ImageData_MaxSprite equ 9
 
+NastyOn equ $8400
+NastyOff equ $400
+
 CustomBase equ $DFF000
 DMACONR equ $2
 DMACON equ $96
@@ -438,11 +441,11 @@ CalculatePosXMask_PCloud2
    ; beq WaitblitFinished\1
 
     ;If we get to here, we're still blitting
-;    move.w #$8400,$DFF096 ;Blit nasty on to get blit done ASAP
+;    move.w #NastyOn,$DFF096 ;Blit nasty on to get blit done ASAP
 ;WaitblitOngoing\1
  ;   btst #6,$DFF002
   ;  bne WaitblitOngoing\1 ;We're STILL blitting
-   ; move.w #$400,$DFF096 ;We're done, so Blit nasty off again
+   ; move.w #NastyOff,$DFF096 ;We're done, so Blit nasty off again
 	
 ;WaitblitFinished\1
 ;		        EndM
@@ -456,11 +459,11 @@ WaitBlitFast\1:
     beq WaitBlitFastFinished\1
 
     ;If we get to here, we're still blitting
-    move.w #$8400,DMACON(A2) ;Blit nasty on to get blit done ASAP
+;    move.w #NastyOn,DMACON(A2) ;Blit nasty on to get blit done ASAP
 WaitBlitFastOngoing\1
     btst #6,DMACONR(A2)
     bne WaitBlitFastOngoing\1 ;We're STILL blitting
-    move.w #$400,DMACON(A2) ;We're done, so Blit nasty off again
+;    move.w #NastyOff,DMACON(A2) ;We're done, so Blit nasty off again
 	
 WaitBlitFastFinished\1
 		        EndM
