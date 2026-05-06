@@ -492,3 +492,28 @@ Z80Wait:
 
 	move.w	(sp)+,d0
 	rts
+
+SE_Neo_CopyToVDP
+    movea.l D0,A0              ; Transfer source address to A0
+    lea     VRAM_BASE,A1       ; A1 = VDP data port
+    move.w #1,VRAM_MOD(A1)
+    move.w  D1,VRAM_ADDRESS(A1)         ; Set VDP address register ($3C0000)
+    subq.w  #1,D2              ; Adjust count for dbra (N-1 iterations)
+    bmi     .done               ; Bail if D2 was zero (now $FFFF, negative)
+.loop:
+    move.w  (A0)+,(A1)        ; Write word to VDP, advance source pointer
+    dbra    D2,.loop          ; Decrement D2, branch if not -1
+.done:
+    rts
+
+SE_Neo_BatchToVDP
+    lea     VRAM_BASE,A1       ; A1 = VDP data port
+    move.w #1,VRAM_MOD(A1)
+    move.w  D1,VRAM_ADDRESS(A1)         ; Set VDP address register ($3C0000)
+    subq.w  #1,D2              ; Adjust count for dbra (N-1 iterations)
+    bmi     .done               ; Bail if D2 was zero (now $FFFF, negative)
+.loop:
+    move.w  D0,(A1)        ; Write word to VDP, advance source pointer
+    dbra    D2,.loop          ; Decrement D2, branch if not -1
+.done:
+    rts

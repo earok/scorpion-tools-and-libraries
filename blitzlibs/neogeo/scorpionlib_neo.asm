@@ -30,6 +30,18 @@
   astatement
   args          long,word,word
   libs
+  subs          SE_Neo_CopyToVDP,0,0    
+  name          "SE_Neo_CopyToVDP","Source Address,Dest address,Number of words"
+
+  astatement
+  args          word,word,word
+  libs
+  subs          SE_Neo_BatchToVDP,0,0    
+  name          "SE_Neo_BatchToVDP","Value,Dest address,Number of words"
+
+  astatement
+  args          long,word,word
+  libs
   subs          SE_Neo_SpriteBatch,0,0    
   name          "SE_Neo_SpriteBatch","Mem Address,VDP Address,Count"
 
