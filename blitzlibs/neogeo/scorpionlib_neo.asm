@@ -28,16 +28,16 @@
   name          "SE_Neo_SpriteX","Sprite,X"   
 
   astatement
-  args          long,word,word
+  args          long,word,word,word
   libs
   subs          SE_Neo_CopyToVDP,0,0    
-  name          "SE_Neo_CopyToVDP","Source Address,Dest address,Number of words"
+  name          "SE_Neo_CopyToVDP","Source Address,Dest address,Number of words,Modulus"
 
   astatement
-  args          word,word,word
+  args          word,word,word,word
   libs
   subs          SE_Neo_BatchToVDP,0,0    
-  name          "SE_Neo_BatchToVDP","Value,Dest address,Number of words"
+  name          "SE_Neo_BatchToVDP","Value,Dest address,Number of words,Modulus"
 
   astatement
   args          long,word,word

@@ -222,7 +222,7 @@ NoCustomWave
 ;D3 = Palette address (offset)
 SE_Neo_SpriteBatchTilePalette
   subq.w       #1,D2
-  blt          SpriteBatchCancel ;Zero or less to do
+  bmi          SpriteBatchCancel ;Zero or less to do
 
   lea.l        VRAM_BASE,A0
   move.l       D0,A1
@@ -244,7 +244,7 @@ SpriteBatchTilePaletteLoop
 ;D2 = Count (word)
 SE_Neo_SpriteBatchTile
   subq.w       #1,D2
-  blt          SpriteBatchCancel ;Zero or less to do
+  bmi          SpriteBatchCancel ;Zero or less to do
 
   lea.l        VRAM_BASE,A0
   move.l       D0,A1
@@ -264,7 +264,7 @@ SpriteBatchTileLoop
 ;D2 = Count (word)
 SE_Neo_SpriteBatchSet
   subq.w       #1,D2
-  blt          SpriteBatchCancel ;Zero or less to do
+  bmi          SpriteBatchCancel ;Zero or less to do
   lea.l        VRAM_BASE,A0
   move.w       D1,VRAM_ADDRESS(A0)
   move.w       #1,VRAM_MOD(A0)
@@ -279,7 +279,7 @@ SpriteBatchSetLoop
 ;D2 = Count (word)
 SE_Neo_SpriteBatch
   subq.w       #1,D2
-  blt          SpriteBatchCancel ;Zero or less to do
+  bmi          SpriteBatchCancel ;Zero or less to do
   lea.l        VRAM_BASE,A0
   move.l       D0,A1
   move.w       D1,VRAM_ADDRESS(A0)
@@ -496,7 +496,7 @@ Z80Wait:
 SE_Neo_CopyToVDP
     movea.l D0,A0              ; Transfer source address to A0
     lea     VRAM_BASE,A1       ; A1 = VDP data port
-    move.w #1,VRAM_MOD(A1)
+    move.w  D3,VRAM_MOD(A1)
     move.w  D1,VRAM_ADDRESS(A1)         ; Set VDP address register ($3C0000)
     subq.w  #1,D2              ; Adjust count for dbra (N-1 iterations)
     bmi     .done               ; Bail if D2 was zero (now $FFFF, negative)
@@ -508,7 +508,7 @@ SE_Neo_CopyToVDP
 
 SE_Neo_BatchToVDP
     lea     VRAM_BASE,A1       ; A1 = VDP data port
-    move.w #1,VRAM_MOD(A1)
+    move.w D3,VRAM_MOD(A1)     ;Load the modulus
     move.w  D1,VRAM_ADDRESS(A1)         ; Set VDP address register ($3C0000)
     subq.w  #1,D2              ; Adjust count for dbra (N-1 iterations)
     bmi     .done               ; Bail if D2 was zero (now $FFFF, negative)
