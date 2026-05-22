@@ -271,7 +271,7 @@ SE_Neo_SpriteBatchSet
 
 SpriteBatchSetLoop
   Move.w      D0,(A0)
-  dbra        D2,SpriteBatchLoop
+  dbra        D2,SpriteBatchSetLoop
   rts
 
 ;D0 = Source address (long)
