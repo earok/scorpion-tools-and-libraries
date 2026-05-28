@@ -10,10 +10,16 @@
   name          "SE_Neo_Setup",""        
 
   astatement
-  args          
+  args
   libs
-  subs          SE_NEO_FakeAllocMem,0,0    
-  name          "SE_NEO_FakeAllocMem",""        
+  subs          SE_NEO_FakeAllocMem,0,0
+  name          "SE_NEO_FakeAllocMem",""
+
+  afunction long
+  args          long
+  libs
+  subs          SE_NEO_FakeAllocMem,0,0
+  name          "SE_NEO_FakeAllocMem_Func","As above, but returns a value"
 
   astatement
   args          word,word,long
