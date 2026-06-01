@@ -221,14 +221,17 @@ NoCustomWave
 ;D2 = Count (word)
 ;D3 = Palette address (offset)
 SE_Neo_SpriteBatchTilePalette
-  subq.w       #1,D2
-  bmi          SpriteBatchCancel ;Zero or less to do
+  move.w       #32,D7 ;We want to set excess tiles to zero to fix shrink window
+  sub.w        D2,D7  ;Subtract the count
 
   lea.l        VRAM_BASE,A0
   move.l       D0,A1
   lsl.w        #6,D1
   move.w       D1,VRAM_ADDRESS(A0)
   move.w       #1,VRAM_MOD(A0)  
+
+  subq.w       #1,D2
+  bmi          SpriteBatchTilePaletteClear ;Zero or less to do
 
 SpriteBatchTilePaletteLoop
   Move.w      (A1)+,(A0) ;Even address
@@ -237,26 +240,51 @@ SpriteBatchTilePaletteLoop
   Move.w      D0,(A0)
   dbra        D2,SpriteBatchTilePaletteLoop
 
+SpriteBatchTilePaletteClear
+  moveq        #0,D2 ;ENSURE that D2 is zero
+  subq.w       #1,D7
+  bmi          SpriteBatchTilePaletteCancel ;Zero or less to clear
+
+SpriteBatchPaletteClearTileLoop
+  Move.w      D2,(A0) ;Even address
+  Move.w      D2,(A0) ;Odd address
+  dbra        D7,SpriteBatchPaletteClearTileLoop
+
+SpriteBatchTilePaletteCancel
   rts
 
 ;D0 = Source address (long)
 ;D1 = VDP address (word) (not left shifted)
 ;D2 = Count (word)
 SE_Neo_SpriteBatchTile
-  subq.w       #1,D2
-  bmi          SpriteBatchCancel ;Zero or less to do
+  move.w       #32,D7 ;We want to set excess tiles to zero to fix shrink window
+  sub.w        D2,D7  ;Subtract the count
 
-  lea.l        VRAM_BASE,A0
+  lea.l        VRAM_BASE,A0 ;Configure the VRAM base
   move.l       D0,A1
   lsl.w        #6,D1
   move.w       D1,VRAM_ADDRESS(A0)
   move.w       #1,VRAM_MOD(A0)  
+
+  subq.w       #1,D2
+  bmi          SpriteBatchTileClear ;Zero or less to do, we still want to clear tiles
 
 SpriteBatchTileLoop
   Move.w      (A1)+,(A0) ;Even address
   Move.w      (A1)+,(A0) ;Odd address
   dbra        D2,SpriteBatchTileLoop
 
+SpriteBatchTileClear
+  moveq        #0,D2 ;ENSURE that D2 is zero
+  subq.w       #1,D7
+  bmi          SpriteBatchTileCancel ;Zero or less to clear
+
+SpriteBatchClearTileLoop
+  Move.w      D2,(A0) ;Even address
+  Move.w      D2,(A0) ;Odd address
+  dbra        D7,SpriteBatchClearTileLoop
+
+SpriteBatchTileCancel
   rts
 
 ;D0 = Value to set (word)
