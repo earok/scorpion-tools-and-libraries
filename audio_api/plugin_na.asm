@@ -41,3 +41,5 @@ _ScorpionAPI_Event
     MoveQ #0,D0
     rts
     
+_ScorpionAPI_Update
+    rts

@@ -73,5 +73,8 @@ _ScorpionAPI_Event
     move.b (A0),D0
     rts
 
+_ScorpionAPI_Update
+    rts    
+
     include "ptplayer.asm"
 
