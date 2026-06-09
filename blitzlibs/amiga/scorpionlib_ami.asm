@@ -52,10 +52,10 @@
 	name "DoMaskBlit2FirstWordMask","DrawX, MinTerm"  
 
 	astatement
-		args word, word, word, word
+		args word, word, long, word, long, long
 		libs
 		subs DoBarBlit,0,0
-	name "DoBarBlit","DrawX, MinTerm, FirstWordMask, LastWordMask"  
+	name "DoBarBlit","DrawX.w, MinTerm.w, FirstAndLastWordMask.l,BpDepth.w, SourceDelta.l,DestDelta.l"  
 
 	astatement
 		args word,long,long,long,long,word

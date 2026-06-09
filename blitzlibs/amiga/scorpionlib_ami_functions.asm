@@ -578,8 +578,10 @@ DoMaskBlit2FirstWordMask
 
 ;D0 = Position
 ;D1 = Minterm
-;D2 = First Word Mask
-;D3 = Last Word Mask
+;D2 = First+Last Word Mask
+;D3 = Bitplanes to do
+;D4 = Source delta
+;D5 = Destination delta
 DoBarBlit
   Move.l #12345678,A0
   Lea CustomBase,A2
@@ -591,21 +593,57 @@ DoBarBlit
   Move.w D0,BLTCON1(A2)
   Or.w D1,D0
   Move.w D0,BLTCON0(A2) ;Masked copy
-  Move.w D2,BLTAFWM(A2) ;First word mask
-  Move.w D3,BLTALWM(A2) ;Last word mask
+  Move.l D2,BLTAFWM(A2) ;First+Last word mask
 
   Move.w (A0),BLTCMOD(A2) ;Source C 60
   Move.w (A0)+,BLTDMOD(A2) ;Destination D 66
   Move.w (A0),BLTBMOD(A2) ;Source B 4c
   Move.w (A0)+,BLTAMOD(A2) ;Source A 64
 
-  Move.l (A0)+,BLTBPTH(A2) ;Image b ;4C
-  Move.l (A0)+,BLTAPTH(A2) ;Mask - A ;50
-  Move.l (A0),BLTCPTH(A2) ;Destination - C $48
+  ;Remember the image source
+  Move.l (A0)+,D0
+  Move.l D0,BLTBPTH(A2) ;Image b ;4C
 
-  Add.w #BLTDPTH,A2
-  Move.l (A0)+,(A2)+ ;Destination - D BLTDPTH = 54
-  Move.w (A0),(A2) ;StartBlit = 58
+  ;Remember the mask source
+  Move.l (A0)+,D6
+  Move.l D6,BLTAPTH(A2) ;Mask A ;50
+
+  ;Remember the destination address
+  Move.l (A0)+,D1
+  Move.l D1,BLTCPTH(A2) ;Destination - C $48
+  Move.l D1,BLTDPTH(A2) ;Destination - D BLTDPTH = 54
+  Move.w (A0),D7 ;Remember what the BlitSize is
+  Move.w D7,BLTSIZE(A2) ;StartBlit = 58
+
+DoBarBlitLoop
+  Subq #1,D3 ;Mark the bitplane is done
+  beq DoBarBlitDone ;We're finished if this now equals zero
+
+  ;Increase the source address
+  Add.l D4,D0
+
+  ;Increase the destination address
+  Add.l D5,D1
+
+  ;Wait for blitter
+  WaitBlitFast DoBarBlitLoop
+
+  ;Set the new image B
+  Move.l D0,BLTBPTH(A2) 
+
+  ;Restore the massk A
+  Move.l D6,BLTAPTH(A2) 
+
+  ;Set the new destination C/D
+  Move.l D1,BLTCPTH(A2)
+  Move.l D1,BLTDPTH(A2) 
+
+  ;Start the next blitter
+  Move.w D7,BLTSIZE(A2) ;StartBlit = 58
+
+  Bra DoBarBlitLoop
+
+DoBarBlitDone
   RTS
 
 
