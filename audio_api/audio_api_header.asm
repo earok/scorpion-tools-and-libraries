@@ -11,7 +11,6 @@
     bra.w _ScorpionAPI_Install
 
 ;Uninstall the audio library
-;A6 = Custom base (AMIGA)
     bra.w _ScorpionAPI_Uninstall
 
 ;Play/Resume
