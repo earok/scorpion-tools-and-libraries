@@ -54,6 +54,7 @@ megadrive_workarea_pointer equ $FF0008
     bra.w _ScorpionAPI_InitSong
 
 ;Trigger a sound effect
+;D0 = Sound ID (for ID-based drivers such as MDSDRV; pointer-based drivers such as XGM use sfx_ptr from the structure instead)
 ;A0 = Pointer to structure as below. This replicates PTPlayer's expected form, not all of these need to be handled per plugin
     bra.w _ScorpionAPI_SFX
 ;   Structure layout of SfxStructure:

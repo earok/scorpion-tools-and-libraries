@@ -131,8 +131,19 @@ _ScorpionAPI_SFX
     movem.l (SP)+,A1-A2
     rts
 
+; Stop a PCM channel by playing the null sample on it at max priority
+; D0 = channel (0-3)
 _ScorpionAPI_SFX_Stop
-    ; XGM has no direct per-channel stop
+    movem.l A1-A2,-(SP)
+    lea xgm_null_sample,A1
+    moveq #1,D1                    ; null sample is 256 bytes, length pre-divided by 256 = 1
+    move.l D0,D2
+    and.l #3,D2                    ; channel in bits 0-1
+    or.l #(15<<2),D2               ; max priority (15) in bits 2-5 to override current sound
+    move.l megadrive_workarea_pointer,A2
+    lea xgm_PCMId(A2),A2
+    bsr XGM_PlayPCM
+    movem.l (SP)+,A1-A2
     rts
 
 _ScorpionAPI_MasterVolume

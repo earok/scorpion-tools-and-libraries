@@ -93,7 +93,7 @@ _ScorpionAPI_InitSong
     rts
 
 _ScorpionAPI_SFX
-    move.l sound_pointer(A0),D0 ;Set the sound ID
+    ; D0 = sound ID passed directly by caller
     move.b sound_priority(A0),D1 ;Set the priority slot
     PrepareWorkArea
     lea mdsdrv,A3
