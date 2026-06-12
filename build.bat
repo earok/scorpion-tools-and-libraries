@@ -14,3 +14,4 @@ vasmm68k_mot -kick1hunks -Fhunkexe -nosym -o .\blitzlibs\bin\scorpionlib_md.obj 
 vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\pt_audio.bin .\audio_api\plugin_ptplayer.asm
 vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\na_audio.bin .\audio_api\plugin_na.asm
 vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\mdsdrv_audio.bin .\audio_api\plugin_mdsdrv.asm
+vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\xgm_audio.bin .\audio_api\plugin_xgm.asm

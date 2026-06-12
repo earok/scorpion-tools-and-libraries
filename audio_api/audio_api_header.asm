@@ -1,5 +1,6 @@
 ;The audio API is intended to provide a common framework for Scorpion audio plugins
 ;Data registers never need to be preserved, but address registers should be
+;On Mega Drive is guaranteed to be aligned with 256 bytes
 
 ;     This is based on the shape of the PTPlayer plugin but is extended where needed
 ;     void *sfx_ptr  (pointer to sample start in Chip RAM, even address)
@@ -82,3 +83,8 @@ megadrive_workarea_pointer equ $FF0008
 ;Vertical blank update
 ;Returns event value in D0.l (eg Protracker E8s), just set to zero if there are no events this driver does
     bra.w _ScorpionAPI_VBlank
+
+;Enable DMA protection - call at the top of VBlank before any DMA transfers
+;On most drivers this does nothing. On XGM it signals the Z80 not to touch the DMA bus.
+;The VBlank call automatically clears this at the bottom of VBlank.
+    bra.w _ScorpionAPI_EnableDMAProtection

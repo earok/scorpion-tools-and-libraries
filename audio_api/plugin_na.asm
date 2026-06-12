@@ -40,3 +40,6 @@ _ScorpionAPI_MusicMask
 _ScorpionAPI_VBlank
     MoveQ #0,D0
     rts
+
+_ScorpionAPI_EnableDMAProtection
+    rts

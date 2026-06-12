@@ -75,6 +75,9 @@ _ScorpionAPI_VBlank
     moveq.l #0,D0
     move.b (A0),D0
     rts
+
+_ScorpionAPI_EnableDMAProtection
+    rts
  
     include "ptplayer.asm"
 
