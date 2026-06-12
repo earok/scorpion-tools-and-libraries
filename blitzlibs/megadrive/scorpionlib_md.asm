@@ -136,7 +136,13 @@
     args long,long,long
     libs
     subs SE_MD_DMA_Transfer,0,0
-  name "SE_MD_DMA_Transfer","Source Address,Dest Address,Length"	
+  name "SE_MD_DMA_Transfer","Source Address,Dest Address,Length"
+
+  astatement
+    args long,long,long,long,long
+    libs
+    subs SE_MD_ParallaxRowCopy,0,0
+  name "SE_MD_ParallaxRowCopy","RowNT,WidthTiles,VDPAddress,Width,Offset"
 
   afunction word
 	args

@@ -6,6 +6,7 @@
 Z80_DRV_COMMAND equ $A00100
 Z80_DRV_PARAMS  equ $A00104
 
+
 ; Work area offsets (relative to megadrive_workarea_pointer)
 xgm_SongPtr     equ 0   ; long: current XGM song data pointer
 xgm_PCMId       equ 4   ; long: PCM id counter (initialized to $40)
@@ -16,7 +17,7 @@ xgm_State       equ 10  ; byte: 0=stopped, 1=paused, 2=playing
 xgm_SampleTable equ 12  ; 256 bytes: sample ID table built by XGM_StartPlayMusic
 ;                          (64 entries x 4 bytes: addr_hi, addr_lo, len_hi, len_lo)
 
-WorkAreaMemory equ 268
+WorkAreaMemory equ xgm_SampleTable+(256*4)
 
 _ScorpionAPI_ConstWorkAreaMemory equ WorkAreaMemory
 _ScorpionAPI_ConstMaxVolume equ 255
@@ -58,8 +59,6 @@ _ScorpionAPI_Play
     beq.s @xgm_play_resume
 
     tst.l xgm_SongPtr(A1)
-    beq.s @xgm_play_done
-
     move.b #2,xgm_State(A1)
     lea xgm_SampleTable(A1),A0
     lea xgm_null_sample,A2
@@ -107,9 +106,8 @@ _ScorpionAPI_InitSong
 ; Note: sound_length should be pre-divided by 256 per XGM convention
 _ScorpionAPI_SFX
     movem.l A1-A2,-(SP)
-
-    move.l sound_pointer(A0),A1
     move.w sound_length(A0),D1
+    move.l sound_pointer(A0),A1
 
     ; D2 = channel[1:0] | priority[5:2]
     moveq #0,D2

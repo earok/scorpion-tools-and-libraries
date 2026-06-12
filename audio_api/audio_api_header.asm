@@ -11,11 +11,11 @@
 ;     BYTE  sfx_pri  (priority, must be in the range 1..127)
 
 sound_pointer equ 0
-sound_length equ sound_pointer + 4
-sound_period equ sound_length + 2
-sound_volume equ sound_period + 2
-sound_channel equ sound_volume + 2
-sound_priority equ sound_channel + 1
+sound_length equ sound_pointer+4
+sound_period equ sound_length+2
+sound_volume equ sound_period+2
+sound_channel equ sound_volume+2
+sound_priority equ sound_channel+1
 
 ;Pointers to work areas on different systems. Not needed on Amiga since variables can be local, not implemented on NeoGeo yet
 megadrive_workarea_pointer equ $FF0008

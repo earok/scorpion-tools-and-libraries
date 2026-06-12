@@ -772,7 +772,50 @@ VDP_Copy_W
 VDP_COPY_DONE
 	RTS
 
-	
+;D0 = Source row base address (NT for this row, 68K address)
+;D1 = WidthTiles (source row width in tiles = words)
+;D2 = Dest VDP address
+;D3 = Width (total words to write to VDP)
+;D4 = Tile word offset (added to every tile value)
+; Sets VDP address once then streams all Width words using auto-increment,
+; wrapping the source pointer every WidthTiles words.
+SE_MD_ParallaxRowCopy:
+	Lea    VDP_DATA,A1
+	Move.w #$8F02,4(A1)        ; VDP auto-increment = 2 bytes
+
+	; Build VDP control-port write address from D2
+	Move.l D2,D5
+	And.w  #$3FFF,D2
+	Swap   D2
+	Rol.w  #2,D5
+	And.w  #3,D5
+	Or.w   D5,D2
+	Or.l   #$40000000,D2
+	Move.l D2,4(A1)            ; Set VDP write address (one time)
+
+	; Source setup: A0 = current ptr, D2 = exclusive row end
+	Move.l D0,A0
+	Add.l  D1,D1               ; D1 = row size in bytes (WidthTiles * 2)
+	Move.l D0,D2
+	Add.l  D1,D2               ; D2 = row end
+
+	SubQ.w #1,D3
+	Blt.s  .SE_MPRC_Done
+
+.SE_MPRC_Loop:
+	Move.w (A0)+,D5
+	Add.w  D4,D5
+	Move.w D5,(A1)
+	Cmpa.l D2,A0
+	Bcs.s  .SE_MPRC_Next       ; A0 < row end: no wrap
+	Sub.l  D1,A0               ; Wrap: rewind by row size
+.SE_MPRC_Next:
+	DBra   D3,.SE_MPRC_Loop
+
+.SE_MPRC_Done:
+	RTS
+
+
 ;0 = Port
 ;A0 = IODATA
 ;A1 = IOCTRL

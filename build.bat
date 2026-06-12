@@ -19,3 +19,4 @@ vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\na_audio.bin .\audio
 vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\mdsdrv_audio.bin .\audio_api\plugin_mdsdrv.asm
 vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\xgm_audio.bin .\audio_api\plugin_xgm.asm
 vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\pico_audio.bin .\audio_api\plugin_pico.asm
+vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\nullsound_audio.bin .\audio_api\plugin_nullsound.asm
