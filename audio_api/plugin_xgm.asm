@@ -519,5 +519,5 @@ xgm_null_sample:
 ; Embedded Z80 XGM driver binary
 ; ============================================================
 xgm_z80_driver:
-    incbin "plugin_xgm_z80.bin"
+    incbin "./audio_plugins/plugin_xgm_z80.bin"
 xgm_z80_driver_end:
