@@ -1,6 +1,7 @@
 ;The audio API is intended to provide a common framework for Scorpion audio plugins
 ;Data registers never need to be preserved, but address registers should be
 
+;     This is based on the shape of the PTPlayer plugin but is extended where needed
 ;     void *sfx_ptr  (pointer to sample start in Chip RAM, even address)
 ;     WORD  sfx_len  (sample length in words)
 ;     WORD  sfx_per  (hardware replay period for sample)
@@ -15,14 +16,20 @@ sound_volume equ sound_period + 2
 sound_channel equ sound_volume + 2
 sound_priority equ sound_channel + 1
 
+;Pointers to work areas on different systems. Not needed on Amiga since variables can be local, not implemented on NeoGeo yet
+megadrive_workarea_pointer equ $FF0008
+
+;How much memory is required to be allocated for this plugin. Only supported on Mega Drive
+    dc.l _ScorpionAPI_ConstWorkAreaMemory
+
 ;Definition of the maximum supported volume eg 64 for Amiga
     dc.w _ScorpionAPI_ConstMaxVolume
 
 ;Install the audio library
 ;D0 = Zero equals running on NTSC, otherwise PAL
-;A0 = VBL Address (AMIGA)
-;A1 = Data table (Mega Drive)
-;A2 = Sample table (Mega Drive)
+;A0 = Additional Data 0 (VBL on Amiga)
+;A1 = Additional Data 1
+;A2 = Additioanl Data 2
 ;D0 Return = Install successful if true
     bra.w _ScorpionAPI_Install
 
@@ -30,7 +37,6 @@ sound_priority equ sound_channel + 1
     bra.w _ScorpionAPI_Uninstall
 
 ;Play/Resume
-;D0 = Song number (only needed for MDSDRV?)
     bra.w _ScorpionAPI_Play
 
 ;Pause
@@ -39,9 +45,10 @@ sound_priority equ sound_channel + 1
 ;Stop music
     bra.w _ScorpionAPI_Stop
 
-;Initialise song. May or may not imply play immediately afterwards
-;D0 = Song number
-;A0 = Song memory position 
+;Initialise song. Scorpion internally will call _ScorpionAPI_Play immediately after so this should only handle the song setup, not the song triggering
+;D0 = Song id
+;D1 = Song position
+;A0 = Song data position 
 ;A1 = Song sample position
     bra.w _ScorpionAPI_InitSong
 
@@ -71,10 +78,7 @@ sound_priority equ sound_channel + 1
 ;Music mask
 ;D0 = Mask of which channels are turned on or off for music
     bra.w _ScorpionAPI_MusicMask
-    
-;Get event value (E8 etc)
-;Returns event value in D0
-    bra.w _ScorpionAPI_Event
 
-;Vertical blank update (if needed)
-    bra.w _ScorpionAPI_Update
+;Vertical blank update
+;Returns event value in D0.l (eg Protracker E8s), just set to zero if there are no events this driver does
+    bra.w _ScorpionAPI_VBlank

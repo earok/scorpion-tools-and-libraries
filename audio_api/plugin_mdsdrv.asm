@@ -1,10 +1,8 @@
     include "audio_api_header.asm"
 
-;1064 bytes of memory are currently allocated here
-MDSWorkArea equ $FF0008
-
+    ;1066 bytes of memory are currently allocated here
     Macro PrepareWorkArea
-    lea MDSWorkArea,A0
+    move.l megadrive_workarea_pointer,A0
     EndM
 
     Macro SafeCommand
@@ -19,7 +17,13 @@ MDSWorkArea equ $FF0008
     movem.l (SP)+,A0-A6
     EndM
 
+WorkAreaMemory equ 1064
+
 _ScorpionAPI_ConstMaxVolume equ 256
+_ScorpionAPI_ConstWorkAreaMemory equ WorkAreaMemory+2 ;Additional memory for internal plugin use
+
+;Remember the song ID to play
+SongId equ WorkAreaMemory
 
 ;======================================================================
 ; initialize sound driver
@@ -63,14 +67,12 @@ _ScorpionAPI_Uninstall
 _ScorpionAPI_Play
     move.b #3,D1 ;Set the priority slot
     PrepareWorkArea
+    move.w SongId(A0),D0
     lea mdsdrv,A3
     SafeRequest
     rts
 
 _ScorpionAPI_Pause
-    ;fall through to stop?
-
-_ScorpionAPI_Stop
     moveq.l #0,D0 ;Set the ID to zero
     move.b #3,D1 ;Set the priority slot
     PrepareWorkArea
@@ -78,8 +80,16 @@ _ScorpionAPI_Stop
     SafeRequest
     rts
 
+_ScorpionAPI_Stop
+    ;Same as pause ebut we want to forget the song ID
+    PrepareWorkArea
+    move.w #0,SongId(A0)
+    bra _ScorpionAPI_Pause
+
 _ScorpionAPI_InitSong
-    ;Do nothing here, just through play/pause
+    ;Remember the song to play
+    PrepareWorkArea
+    move.w D0,SongId(A0)    
     rts
 
 _ScorpionAPI_SFX
@@ -115,16 +125,21 @@ _ScorpionAPI_MusicChannels
 _ScorpionAPI_MusicMask
     rts
 
-_ScorpionAPI_Event
-    MoveQ #0,D0
-    rts
+_ScorpionAPI_VBlank
 
-_ScorpionAPI_Update
+    move.w  #$100,$a11100 ;Fast pause Z80
+dmawait
+    btst	#0,$a11100
+    bne	    dmawait
+    st.b	$a00e06					; Set z_vbl_ack to $ff
+    move.w  #$000,$a11100 ;Resume Z80
+
     movem.l A4-A6,-(SP)
     PrepareWorkArea
     lea mdsdrv,A3
     jsr mds_update(A3)
     movem.l (SP)+,A4-A6
+    MoveQ #0,D0 ;No events
     rts
 
 ;Clamps D7 to range where 127 is minimum, 0 is maximum. Trashes D6-D7. D6 is in, D7 is out

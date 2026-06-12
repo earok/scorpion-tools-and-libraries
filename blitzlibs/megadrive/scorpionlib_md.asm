@@ -240,38 +240,6 @@
 	subs SE_MD_GamePad2_6Button,0,0
   name "SE_MD_GamePad2_6Button","Extended Button State for GamePad 2 - MXYZSACBRLDU"
 
-
-;MDSDRV calls
-;  astatement
-;	args long,long,long,long,long
-;	libs
-;	subs MDSDRV_Init,0,0
- ; name "MDSDRV_Init","Work area of >= 1024 bytes,Sequence pointer,PCM data pointer,DMA protection bytes,MDSDRV blob"
-
-;  astatement
-;	args long, long
-;	libs
-;	subs MDSDRV_Update,0,0
- ; name "MDSDRV_Update","Work area of >= 1024 bytes,MDSDRV blob"
-
-  ;astatement
-	;args long,long,long,long
-	;libs
-	;subs MDSDRV_Volume,0,0
-  ;name "MDSDRV_Volume","Volume (0-256), Priority, Work area of >= 1024 bytes,MDSDRV blob"
-
-  ;astatement
-	;args long,long,long,long
-	;libs
-	;subs MDSDRV_GVolume,0,0
-  ;name "MDSDRV_GVolume","Music Volume (0-256), Sound Volume (0-256), Work area of >= 1024 bytes,MDSDRV blob"
-
-;  astatement
-;	args long,long,long,long
-;	libs
-;	subs MDSDRV_Request,0,0
- ; name "MDSDRV_Request","Sound number,priority level,Work area of >= 1024 bytes,MDSDRV blob"
-
 blitz_finit:
 	nullsub _blitz_ahx_lib_finit,0,0
 	libfin
@@ -280,4 +248,3 @@ _blitz_ahx_lib_finit:
  	rts	  
 
   include ".\scorpionlib_md_functions.asm"
-;  include ".\scorpionlib_md_functions_mdsdrv.asm"

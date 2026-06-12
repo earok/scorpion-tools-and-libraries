@@ -1,5 +1,6 @@
     include "audio_api_header.asm"
 
+_ScorpionAPI_ConstWorkAreaMemory equ 0
 _ScorpionAPI_ConstMaxVolume equ 64
 
 storeAddressRegisters	macro
@@ -39,6 +40,7 @@ _ScorpionAPI_Stop
 
 _ScorpionAPI_InitSong
     storeAddressRegisters
+    move.l D1,D0 ;Move the position into the position slot
     bsr _mt_init
     restoreAddressRegisters
 
@@ -68,13 +70,11 @@ _ScorpionAPI_MusicMask
     bsr _mt_musicmask
     restoreAddressRegisters
 
-_ScorpionAPI_Event
+_ScorpionAPI_VBlank
     lea _mt_E8Trigger,A0
+    moveq.l #0,D0
     move.b (A0),D0
     rts
-
-_ScorpionAPI_Update
-    rts    
-
+ 
     include "ptplayer.asm"
 

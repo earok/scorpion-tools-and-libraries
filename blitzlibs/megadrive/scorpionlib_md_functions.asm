@@ -1,7 +1,7 @@
 ;Memory allocation
 HBlank equ $FF0000
 MemWorkArea equ HBlank+8 ;Eight bytes for the Raster Effects area
-MemFreeStart equ MemWorkArea+1064 ;Start of the memory free for allocations, including 1064 bytes for MDSDRV work area
+MemFreeStart equ MemWorkArea+4 ;Just a pointer that audio plugins can use
 
 VDP_CONTROL	equ	$00C00004
 VDP_DATA	equ $00C00000
@@ -1268,6 +1268,9 @@ SE_MD_ModeRegister4
 
 	RTS
 	
+JustReturn
+	RTS
+
 SE_MD_Fake_AllocMem:
   Move.l           #MemFreeStart,A0 
 
