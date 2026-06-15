@@ -12,10 +12,10 @@ vasmm68k_mot -kick1hunks -Fhunkexe -nosym -o .\blitzlibs\bin\scorpionlib_md.obj 
 
 ::Build all of the audio plugins (Z80)
 sjasm .\audio_api\plugin_xgm_z80.s80 .\audio_api\audio_plugins\plugin_xgm_z80.bin
+call .\audio_api\nullsound\build_nullsound.bat
 
 ::Build all of the audio plugins (M68K)
 vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\pt_audio.bin .\audio_api\plugin_ptplayer.asm
-vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\na_audio.bin .\audio_api\plugin_na.asm
 vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\mdsdrv_audio.bin .\audio_api\plugin_mdsdrv.asm
 vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\xgm_audio.bin .\audio_api\plugin_xgm.asm
 vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\pico_audio.bin .\audio_api\plugin_pico.asm

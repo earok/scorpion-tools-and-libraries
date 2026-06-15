@@ -1,0 +1,5 @@
+*.rel
+*.lib
+*.ihx
+*.lst
+*.sym

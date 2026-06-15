@@ -9,10 +9,18 @@
 _ScorpionAPI_ConstWorkAreaMemory equ 0
 _ScorpionAPI_ConstMaxVolume equ 64
 
-; M1 ROM builder must assign command 4 to the ADPCM-B stop handler.
-; All other user sounds start at command 5.
+; Command ID conventions (must match M1 ROM builder):
+;   0x00        unused
+;   0x01        ROM switch (NullSound internal, NMI handler)
+;   0x02        eye catcher (NullSound internal, NMI handler)
+;   0x03        reset/init (NullSound internal, NMI handler)
+;   0x04        ADPCM-B stop
+;   0x05        NSS stream stop
+;   0x06+       samples  (5 + SampleID)
+;   0x7F down   music    (128 - MusicID)
 NULLSOUND_CMD_RESET equ 3
 NULLSOUND_CMD_ADPCMB_STOP equ 4
+NULLSOUND_CMD_STREAM_STOP equ 5
 
 _ScorpionAPI_Install
     moveq #NULLSOUND_CMD_RESET,D0
@@ -23,7 +31,7 @@ _ScorpionAPI_Install
 _ScorpionAPI_Uninstall
     rts
 
-; Music play/pause/stop are no-ops until NSS music is implemented
+; No pause concept in NullSound streams
 _ScorpionAPI_Play
     rts
 
@@ -31,15 +39,21 @@ _ScorpionAPI_Pause
     rts
 
 _ScorpionAPI_Stop
+    moveq #NULLSOUND_CMD_STREAM_STOP,D0
+    bsr.w ns_send
     rts
 
-; D0 = NullSound command ID for this music track. No-op until NSS is implemented;
-; SP_InitSong calls SP_Play immediately after, so both are stubs for now.
+; D0 = MusicID (1, 2, 3...) -> command 128 - MusicID
+; SP_InitSong calls SP_Play immediately after, so send here and let Play no-op
 _ScorpionAPI_InitSong
+    neg.b D0
+    add.b #$80,D0
+    bsr.w ns_send
     rts
 
-; D0 = NullSound command ID stored in sfx_cha of the project sound entry
+; D0 = SampleID (1, 2, 3...) -> command 5 + SampleID
 _ScorpionAPI_SFX
+    add.b #5,D0
     bsr.w ns_send
     rts
 
@@ -66,8 +80,10 @@ _ScorpionAPI_EnableDMAProtection
     rts
 
 ; TEMPORARY: ADPCM-B extension implementations
+; D0 = MusicID (1, 2, 3...) -> command 128 - MusicID
 _ScorpionAPI_ADPCMB_Play
-    ; D0 = NullSound command ID for this ADPCM-B track (assigned by M1 ROM builder)
+    neg.b D0
+    add.b #$80,D0
     bsr.w ns_send
     rts
 
@@ -79,7 +95,7 @@ _ScorpionAPI_ADPCMB_Stop
 ; NullSound command send routine
 ; Writes command byte to the Z80 sound port and waits for acknowledgment.
 ; NullSound NMI handler responds with (command | $80).
-; D0.b = command ID (range $03..$7F)
+; D0.b = command ID
 ; Trashes D0, D7
 ns_send
     move.b D0,$320000
