@@ -1,11 +1,5 @@
     include "audio_api_header.asm"
 
-; TEMPORARY: ADPCM-B extensions. These will move to a dedicated CD/music plugin
-; once that plugin API is defined. Appended after the standard header so other
-; plugins and the header itself are unaffected.
-    bra.w _ScorpionAPI_ADPCMB_Play
-    bra.w _ScorpionAPI_ADPCMB_Stop
-
 _ScorpionAPI_ConstWorkAreaMemory equ 0
 _ScorpionAPI_ConstMaxVolume equ 64
 
@@ -23,8 +17,6 @@ NULLSOUND_CMD_ADPCMB_STOP equ 4
 NULLSOUND_CMD_STREAM_STOP equ 5
 
 _ScorpionAPI_Install
-    moveq #NULLSOUND_CMD_RESET,D0
-    bsr.w ns_send
     moveq #1,D0
     rts
 
@@ -39,13 +31,20 @@ _ScorpionAPI_Pause
     rts
 
 _ScorpionAPI_Stop
+; D0 = channel (for ADPCM B)
+    tst.w D0
+    bne _ScorpionAPI_ADPCMB_Stop
     moveq #NULLSOUND_CMD_STREAM_STOP,D0
     bsr.w ns_send
     rts
 
 ; D0 = MusicID (1, 2, 3...) -> command 128 - MusicID
+; D1 = position (not used here)
+; D2 = channel (for ADPCM B)
 ; SP_InitSong calls SP_Play immediately after, so send here and let Play no-op
 _ScorpionAPI_InitSong
+    tst.w D2
+    bne _ScorpionAPI_ADPCMB_Play    
     neg.b D0
     add.b #$80,D0
     bsr.w ns_send

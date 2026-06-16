@@ -44,11 +44,13 @@ megadrive_workarea_pointer equ $FF0008
     bra.w _ScorpionAPI_Pause
 
 ;Stop music
+;D0 = Song channel (only for special purposes)
     bra.w _ScorpionAPI_Stop
 
 ;Initialise song. Scorpion internally will call _ScorpionAPI_Play immediately after so this should only handle the song setup, not the song triggering
 ;D0 = Song id
 ;D1 = Song position
+;D2 = Song channel (only for special purposes)
 ;A0 = Song data position 
 ;A1 = Song sample position
     bra.w _ScorpionAPI_InitSong
