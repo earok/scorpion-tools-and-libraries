@@ -17,6 +17,8 @@ NULLSOUND_CMD_ADPCMB_STOP equ 4
 NULLSOUND_CMD_STREAM_STOP equ 5
 
 _ScorpionAPI_Install
+    moveq #NULLSOUND_CMD_RESET,D0
+    bsr.w ns_send
     moveq #1,D0
     rts
 
@@ -92,18 +94,7 @@ _ScorpionAPI_ADPCMB_Stop
     rts
 
 ; NullSound command send routine
-; Writes command byte to the Z80 sound port and waits for acknowledgment.
-; NullSound NMI handler responds with (command | $80).
 ; D0.b = command ID
-; Trashes D0, D7
 ns_send
     move.b D0,$320000
-    or.b #$80,D0
-.wait
-    move.w #999,D7
-.delay
-    dbra D7,.delay
-    move.b $320000,D7
-    cmp.b D7,D0
-    bne.s .wait
     rts
