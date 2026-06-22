@@ -15,7 +15,9 @@ restoreAddressRegisters	macro
 
 _ScorpionAPI_Install
     storeAddressRegisters
+    move.l A1,A0 ;VBR
     bsr _mt_install_cia
+    moveq #-1,D0 ;Force successful install
     restoreAddressRegisters
 
 _ScorpionAPI_Uninstall
@@ -61,7 +63,6 @@ _ScorpionAPI_MasterVolume
 
 _ScorpionAPI_MusicChannels
     lea _mt_MusicChannels,A0
-    moveq #0,D0
     move.b D0,(A0)
     rts
 
@@ -72,7 +73,7 @@ _ScorpionAPI_MusicMask
 
 _ScorpionAPI_VBlank
     lea _mt_E8Trigger,A0
-    moveq.l #0,D0
+    moveq #0,D0
     move.b (A0),D0
     rts
 
