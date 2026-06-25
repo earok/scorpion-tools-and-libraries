@@ -118,7 +118,10 @@ _ScorpionAPI_SFX
     and.b #3,D2
     moveq #0,D0
     move.b sound_priority(A0),D0
-    lsr.b #3,D0                    ; scale 1-127 → 0-15
+    cmp.b #15,D0
+    ble.s @xgm_sfx_pri
+    moveq #15,D0                   ; clamp to XGM max priority
+@xgm_sfx_pri:
     lsl.b #2,D0
     or.b D0,D2
 
