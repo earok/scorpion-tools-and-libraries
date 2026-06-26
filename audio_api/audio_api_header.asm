@@ -18,7 +18,7 @@ sound_channel equ sound_volume+2
 sound_priority equ sound_channel+1
 
 ;Pointers to work areas on different systems. Not needed on Amiga since variables can be local, not implemented on NeoGeo yet
-megadrive_workarea_pointer equ $FF0008
+megadrive_workarea_pointer equ $FF000E
 
 ;How much memory is required to be allocated for this plugin. Only supported on Mega Drive
     dc.l _ScorpionAPI_ConstWorkAreaMemory

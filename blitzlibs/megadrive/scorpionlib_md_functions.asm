@@ -1,5 +1,5 @@
 ;Memory allocation
-HBlank equ $FF0000
+HBlank equ $FF0006 ;Six bytes before this for debugging purposes
 MemWorkArea equ HBlank+8 ;Eight bytes for the Raster Effects area
 MemFreeStart equ MemWorkArea+4 ;Just a pointer that audio plugins can use
 

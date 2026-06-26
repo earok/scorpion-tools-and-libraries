@@ -1,4 +1,5 @@
-AutoAnimTimer equ $100000
+DebugPointer equ $100000
+AutoAnimTimer equ DebugPointer+6 
 HBlank equ AutoAnimTimer+4
 NextHBlank equ HBlank+2
 
