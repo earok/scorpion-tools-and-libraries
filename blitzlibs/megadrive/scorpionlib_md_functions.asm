@@ -218,6 +218,22 @@ SE_MD_HBlank_Off
 	move.w #$8004,VDP_CONTROL 
 	RTS
 
+;D0 = Address
+;D1 = Mod
+SE_MD_SetVDPAddress
+	Or.w #$8F00,D1
+	Move.w D1,VDP_CONTROL ;Set to word length
+    Move.l D0,D1
+	Move.l D0,D2
+	And.w #$3fff,D1
+	SWAP D1	
+	ROL.w #2,D2
+	And.w #3,D2
+	Or.w D2,D1
+	Or.l #$40000000,D1
+    move.l D1,VDP_CONTROL	
+	RTS	
+
 SE_MD_SetPlaneSize
 	lsl.w #4,D1
 	or.w D1,D0

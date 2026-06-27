@@ -115,6 +115,12 @@
   name "SE_MD_LoadPatterns_DMA","Pattern address, first pattern index, num of patterns"
 
   astatement
+    args long,word
+    libs
+    subs SE_MD_SetVDPAddress,0,0
+  name "SE_MD_SetVDPAddress","Address,Mod"	
+
+  astatement
     args word,long
     libs
     subs SE_MD_CopyTo_VDP_W,0,0
@@ -142,7 +148,7 @@
     args long,long,long,long,long
     libs
     subs SE_MD_ParallaxRowCopy,0,0
-  name "SE_MD_ParallaxRowCopy","RowNT,WidthTiles,VDPAddress,Width,Offset"
+  name "SE_MD_ParallaxRowCopy","RowNT,WidthTiles,VDPAddress.l,Width,Offset"
 
   afunction word
 	args
