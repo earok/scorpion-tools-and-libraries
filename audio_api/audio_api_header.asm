@@ -1,3 +1,5 @@
+version equ 1
+
 ;The audio API is intended to provide a common framework for Scorpion audio plugins
 ;Data registers never need to be preserved, but address registers should be
 ;On Mega Drive is guaranteed to be aligned with 256 bytes
@@ -19,6 +21,9 @@ sound_priority equ sound_channel+1
 
 ;Pointers to work areas on different systems. Not needed on Amiga since variables can be local, not implemented on NeoGeo yet
 megadrive_workarea_pointer equ $FF000E
+
+;Can be used to ensure that
+    dc.l version
 
 ;How much memory is required to be allocated for this plugin. Only supported on Mega Drive
     dc.l _ScorpionAPI_ConstWorkAreaMemory
