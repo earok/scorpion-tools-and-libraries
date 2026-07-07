@@ -198,6 +198,9 @@ _ScorpionAPI_EnableDMAProtection
 ; d0 = Z80 driver size in bytes
 ; d1 = Null sample address (256-byte aligned)
 XGM_init
+    move.w  SR,-(SP)
+    move.w  #$2700,SR
+
     move.w  #$100,($A11100)
     move.w  #$100,($A11200)
 
@@ -245,6 +248,8 @@ XGM_init
 
     btst   #7,d0
     beq    @test_ready
+
+    move.w  (SP)+,SR
     rts
 
 

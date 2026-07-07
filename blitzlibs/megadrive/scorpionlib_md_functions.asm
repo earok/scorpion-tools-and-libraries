@@ -114,6 +114,8 @@ Skip:
 	move.w #$0000,$00A11100    ; Release control of bus
 	move.w #$100,$00A11200	   ; Reset the Z80 again.
 
+	bsr YM2612_ResetChip       ; Silence/reset the YM2612 - Z80 is held inert above so this is safe
+
 	move.l #PSGData,a0        ; Load address of PSG data into a0
 	move.l #$03,d0           ; 4 bytes of data
 .CopyPSG:
@@ -205,6 +207,147 @@ VDPRegisters:
 	dc.b $00 ; 22: DMA source address mid byte
 	dc.b $80 ; 23: DMA source address hi byte, memory-to-VRAM mode (bits 6-7)
    	
+
+; ==============================================================
+; Reset the YM2612 to a clean, silent, known state (mirrors SGDK's
+; YM2612_reset). Trashes d0-d7/a0-a2. Caller must ensure the Z80 is
+; held inert (in reset) first, so the 68k can write the chip directly
+; without contention - see the call site in SE_MD_Setup above.
+; ==============================================================
+YM2612_ResetChip
+	movem.l d0-d7/a0-a2,-(sp)
+
+	; Global registers (part 1 only)
+	move.b #$22,d0 : moveq #$00,d1 : bsr YM_WritePart1 ; LFO off
+	move.b #$27,d0 : moveq #$00,d1 : bsr YM_WritePart1 ; ch3 normal mode, timers off
+	move.b #$2B,d0 : moveq #$00,d1 : bsr YM_WritePart1 ; DAC off
+
+	; Key off all 6 channels (channel selector always goes via part 1: 0,1,2,4,5,6)
+	move.b #$28,d0
+	moveq #0,d1 : bsr YM_WritePart1
+	moveq #1,d1 : bsr YM_WritePart1
+	moveq #2,d1 : bsr YM_WritePart1
+	moveq #4,d1 : bsr YM_WritePart1
+	moveq #5,d1 : bsr YM_WritePart1
+	moveq #6,d1 : bsr YM_WritePart1
+
+	; Slot registers: 7 bases, sweep both parts x 3 channels x 4 slots each
+	lea YM_SlotBaseTable,a2
+	moveq #6,d7
+.SlotBases:
+	move.b (a2)+,d6            ; base register
+	move.b (a2)+,d5            ; default value
+	bsr YM_SweepSlots
+	dbra d7,.SlotBases
+
+	; Channel registers: 6 bases, sweep both parts x 3 channels each
+	lea YM_ChanBaseTable,a2
+	moveq #5,d7
+.ChanBases:
+	move.b (a2)+,d6
+	move.b (a2)+,d5
+	bsr YM_SweepChannels
+	dbra d7,.ChanBases
+
+	movem.l (sp)+,d0-d7/a0-a2
+	rts
+
+; d6.b = base register, d5.b = value -> writes base+channel+slot*4
+; for channel 0-2, slot 0-3, across both parts
+YM_SweepSlots:
+	moveq #1,d4                ; part 0-1
+.Part:
+	moveq #2,d3                ; channel 0-2
+.Chan:
+	moveq #3,d2                ; slot 0-3 (represents +0,+4,+8,+12)
+.Slot:
+	move.b d6,d0
+	add.b d3,d0                ; + channel
+	move.b d2,d1
+	lsl.b #2,d1
+	add.b d1,d0                ; + slot*4
+	move.b d5,d1                ; value
+	tst.b d4
+	beq .P1
+	bsr YM_WritePart2
+	bra .PDone
+.P1:
+	bsr YM_WritePart1
+.PDone:
+	dbra d2,.Slot
+	dbra d3,.Chan
+	dbra d4,.Part
+	rts
+
+; d6.b = base register, d5.b = value -> writes base+channel
+; for channel 0-2, across both parts
+YM_SweepChannels:
+	moveq #1,d4
+.CPart:
+	moveq #2,d3
+.CChan:
+	move.b d6,d0
+	add.b d3,d0
+	move.b d5,d1
+	tst.b d4
+	beq .CP1
+	bsr YM_WritePart2
+	bra .CPDone
+.CP1:
+	bsr YM_WritePart1
+.CPDone:
+	dbra d3,.CChan
+	dbra d4,.CPart
+	rts
+
+; d0.b = register, d1.b = value -> write to part 1 ($A04000/$A04001)
+YM_WritePart1:
+	movem.l a1,-(sp)
+	lea $00A04000,a1
+	bsr YM_WriteGeneric
+	movem.l (sp)+,a1
+	rts
+
+; d0.b = register, d1.b = value -> write to part 2 ($A04002/$A04003)
+YM_WritePart2:
+	movem.l a1,-(sp)
+	lea $00A04002,a1
+	bsr YM_WriteGeneric
+	movem.l (sp)+,a1
+	rts
+
+; a1 = address port (data port = a1+1); d0.b = register, d1.b = value
+; Waits on the chip's global busy flag (bit 7 of $A04000) before each write.
+YM_WriteGeneric:
+	move.l d2,-(sp)
+.Busy1:
+	move.b $00A04000,d2
+	bmi .Busy1
+	move.b d0,(a1)
+.Busy2:
+	move.b $00A04000,d2
+	bmi .Busy2
+	move.b d1,1(a1)
+	move.l (sp)+,d2
+	rts
+
+YM_SlotBaseTable:
+	dc.b $30,$00  ; DT1-MUL
+	dc.b $40,$7F  ; TL (max attenuation = silent)
+	dc.b $50,$00  ; RS-AR
+	dc.b $60,$00  ; AM-D1R
+	dc.b $70,$00  ; D2R
+	dc.b $80,$FF  ; D1L-RR (max release = fully off)
+	dc.b $90,$00  ; SSG-EG
+
+YM_ChanBaseTable:
+	dc.b $A0,$00  ; Freq LSB
+	dc.b $A4,$00  ; Block-Freq MSB
+	dc.b $A8,$00  ; Freq LSB (ch3 special mode)
+	dc.b $AC,$00  ; Block-Freq MSB (ch3 special mode)
+	dc.b $B0,$00  ; Feedback-Algo
+	dc.b $B4,$C0  ; Pan L+R on, no LFO sensitivity
+
 
 SE_MD_Stop
 	Move #$2700,SR 	;Final setup steps ;DISABLE ALL INTERRUPTS
