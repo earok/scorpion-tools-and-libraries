@@ -289,11 +289,47 @@ XGM_IsPlayingMusic
     rts
 
 
+; Wait (bounded) until the Z80 has consumed any pending music command bits
+; (play $40 / resume $20 / pause $10) in the COMMAND byte. The Z80 clears its
+; own command bit when it reaches external_com, so a cleared bit is the
+; "consumed" handshake. The bus is released between polls so the Z80 can
+; actually run and clear the bit. Bounded by a safety cap so a stalled Z80 (or
+; a frame with no vint tick) can never hang the vblank interrupt; in steady
+; state the previous command has already been consumed and this exits on the
+; first poll. Called at the head of each music command routine so a new
+; command never races a still-pending previous one (the stale pause-bit that
+; silently kills the next song). Preserves all registers.
+XGM_WaitMusicConsumed
+    movem.l d0-d1,-(sp)
+    move.w  #$400,d0             ; bounded safety cap (normally exits first poll)
+
+@XGM_WaitMusicConsumed_loop:
+    move.w  #$100,($A11100)      ; request Z80 bus
+
+@XGM_WaitMusicConsumed_grant:
+    move.w  ($A11100),d1
+    btst    #8,d1
+    bne     @XGM_WaitMusicConsumed_grant
+
+    move.b  (Z80_DRV_COMMAND),d1 ; read command byte
+    move.w  #$000,($A11100)      ; release bus so the Z80 can run/consume
+    and.b   #$70,d1              ; play | resume | pause command bits
+    beq     @XGM_WaitMusicConsumed_done
+
+    subq.w  #1,d0
+    bne     @XGM_WaitMusicConsumed_loop
+
+@XGM_WaitMusicConsumed_done:
+    movem.l (sp)+,d0-d1
+    rts
+
+
 ; Start playing a song
 ; a0 = sample table buffer
 ; a1 = XGM song data
 ; a2 = null sample pointer
 XGM_StartPlayMusic
+    bsr     XGM_WaitMusicConsumed   ; drain any pending music command first
     move.w  #$100,($A11100)
     move.w  #$100,($A11200)
 
@@ -368,6 +404,7 @@ XGM_StartPlayMusic
 
 
 XGM_ResumePlayMusic
+    bsr     XGM_WaitMusicConsumed   ; drain any pending music command first
     move.w  #$100,($A11100)
     move.w  #$100,($A11200)
 
@@ -382,6 +419,7 @@ XGM_ResumePlayMusic
 
 
 XGM_PausePlayMusic
+    bsr     XGM_WaitMusicConsumed   ; drain any pending music command first
     move.w  #$100,($A11100)
     move.w  #$100,($A11200)
 
@@ -398,6 +436,7 @@ XGM_PausePlayMusic
 ; Play a silent track (effectively stops music)
 ; d0 = address of empty/silent XGM file
 XGM_StopPlayMusic
+    bsr     XGM_WaitMusicConsumed   ; drain any pending music command first (d0 song ptr preserved)
     move.w  #$100,($A11100)
     move.w  #$100,($A11200)
 
