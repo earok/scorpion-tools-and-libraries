@@ -82,6 +82,7 @@ _ScorpionAPI_EnableDMAProtection
 
 ; TEMPORARY: ADPCM-B extension implementations
 ; D0 = MusicID (1, 2, 3...) -> command 128 - MusicID
+; The Music and Sample ID limits must be clamped by the compiler, they're not checked here
 _ScorpionAPI_ADPCMB_Play
     neg.b D0
     add.b #$80,D0

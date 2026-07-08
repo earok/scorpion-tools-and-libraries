@@ -114,6 +114,7 @@ _ScorpionAPI_MasterVolume
 	Exg D7,D2
 
 	MoveQ.l #command_setsongvolume,D0
+	MoveQ #3,D1 ;command_setsongvolume: D1 = priority slot to affect, D2 = volume (0=max, 127=min). Music is always requested on priority 3 (see _ScorpionAPI_Play/_ScorpionAPI_Pause), so target that slot here.
     PrepareWorkArea
     lea mdsdrv,A3
 	SafeCommand
@@ -134,7 +135,8 @@ _ScorpionAPI_VBlank
 dmawait
     btst	#0,$a11100
     bne	    dmawait
-    st.b	$a00e06					; Set z_vbl_ack to $ff
+    ;DMA acknowledgement from main CPU (required for MDSDRV)
+    st.b	$a00e06					; Set z_vbl_ack to $ff    
     move.w  #$000,$a11100 ;Resume Z80
 
     movem.l A4-A6,-(SP)
