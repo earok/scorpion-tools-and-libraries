@@ -54,11 +54,12 @@ _ScorpionAPI_Uninstall
 _ScorpionAPI_Play
     movem.l A0-A2,-(SP)
     move.l megadrive_workarea_pointer,A1
+    tst.l xgm_SongPtr(A1)
+    beq @xgm_play_done ;Sanity check, prevent play if there's no song pointer
 
     cmp.b #1,xgm_State(A1)
     beq.s @xgm_play_resume
 
-    tst.l xgm_SongPtr(A1)
     move.b #2,xgm_State(A1)
     lea xgm_SampleTable(A1),A0
     lea xgm_null_sample,A2
@@ -98,6 +99,7 @@ _ScorpionAPI_InitSong
     movem.l A1,-(SP)
     move.l megadrive_workarea_pointer,A1
     move.l A0,xgm_SongPtr(A1)
+    clr.b xgm_State(A1)      ; new song must never be treated as resume of the old one
     movem.l (SP)+,A1
     rts
 
