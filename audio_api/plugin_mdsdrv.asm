@@ -129,6 +129,9 @@ _ScorpionAPI_MusicMask
 _ScorpionAPI_EnableDMAProtection
     rts
 
+_ScorpionAPI_DisableDMAProtection
+    rts
+
 _ScorpionAPI_VBlank
 
     move.w  #$100,$a11100 ;Fast pause Z80

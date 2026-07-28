@@ -190,6 +190,9 @@ _ScorpionAPI_VBlank
 _ScorpionAPI_EnableDMAProtection
     bra XGM_EnableProtection
 
+_ScorpionAPI_DisableDMAProtection
+    bra XGM_DisableProtection
+
 
 ; ============================================================
 ; Internal XGM driver routines
@@ -258,8 +261,6 @@ XGM_vint
     move.w  ($A11100),d1
     btst    #8,d1
     bne     @z80_wait1_XGM_vint
-
-    move.b  #0,(Z80_DRV_PARAMS+$D)
 
     tst.b ($A00112)
     beq XGM_vint_ready
@@ -545,6 +546,16 @@ XGM_EnableProtection
     btst    #8,d1
     bne     XGM_EnableProtection
     move.b  #1,(Z80_DRV_PARAMS+$D)
+    move.w  #$000,($A11100)
+    rts
+
+
+XGM_DisableProtection
+    move.w  #$100,($A11100)
+    move.w  ($A11100),d1
+    btst    #8,d1
+    bne     XGM_DisableProtection
+    move.b  #0,(Z80_DRV_PARAMS+$D)
     move.w  #$000,($A11100)
     rts
 

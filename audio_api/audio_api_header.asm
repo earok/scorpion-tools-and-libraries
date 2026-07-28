@@ -1,4 +1,4 @@
-version equ 1
+version equ 2
 
 ;The audio API is intended to provide a common framework for Scorpion audio plugins
 ;Data registers never need to be preserved, but address registers should be
@@ -92,7 +92,11 @@ megadrive_workarea_pointer equ $FF000E
 ;Returns event value in D0.l (eg Protracker E8s), just set to zero if there are no events this driver does
     bra.w _ScorpionAPI_VBlank
 
-;Enable DMA protection - call at the top of VBlank before any DMA transfers
+;Enable DMA protection - call before any DMA transfers
 ;On most drivers this does nothing. On XGM it signals the Z80 not to touch the DMA bus.
-;The VBlank call automatically clears this at the bottom of VBlank.
+;Nothing clears this implicitly, every Enable must be paired with a Disable.
     bra.w _ScorpionAPI_EnableDMAProtection
+
+;Disable DMA protection - call once DMA transfers are complete
+;On most drivers this does nothing. On XGM it signals the Z80 that the DMA bus is free again.
+    bra.w _ScorpionAPI_DisableDMAProtection

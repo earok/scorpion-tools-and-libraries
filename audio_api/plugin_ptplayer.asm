@@ -79,6 +79,9 @@ _ScorpionAPI_VBlank
 
 _ScorpionAPI_EnableDMAProtection
     rts
+
+_ScorpionAPI_DisableDMAProtection
+    rts
  
     include "ptplayer.asm"
 
