@@ -262,6 +262,14 @@ XGM_vint
     btst    #8,d1
     bne     @z80_wait1_XGM_vint
 
+    ; Watchdog: protection must never survive a frame boundary. All DMA happens
+    ; earlier in the vblank handler than this call, so by now every Enable is
+    ; owed a Disable that has already run. If one was lost (a nested vblank can
+    ; steal the Z80 bus out from under XGM_DisableProtection, dropping its
+    ; write), the Z80 would otherwise sit in bus_protect_wait forever and music
+    ; would be permanently silent. This clear is bus-owned and free.
+    move.b  #0,(Z80_DRV_PARAMS+$D)
+
     tst.b ($A00112)
     beq XGM_vint_ready
 
