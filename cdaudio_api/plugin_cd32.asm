@@ -37,6 +37,17 @@ _ScorpionAPI_Install
     tst.l d0
     beq.s .fail
 
+    ;A second request for the same unit, so the pause kick below can be issued while the
+    ;play request is still outstanding. Cloning the opened request is the standard way to
+    ;do this without a second OpenDevice - it must not be closed separately.
+    lea cd32_pauseio(pc),a1
+    move.b #NT_MESSAGE,MN_LNTYPE(a1)
+    lea cdv_port(a3),a0
+    move.l a0,MN_REPLYPORT(a1)
+    move.w #IOSTD_SIZE,MN_LENGTH(a1)
+    move.l cdv_io+IO_DEVICE(a3),IO_DEVICE(a1)
+    move.l cdv_io+IO_UNIT(a3),IO_UNIT(a1)
+
     lea cdv_io(a3),a1
     move.w #CD_TOCLSN,IO_COMMAND(a1)
     clr.l IO_OFFSET(a1)             ;Entry 0 = summary
@@ -81,8 +92,6 @@ _ScorpionAPI_Play
 
     ;Whatever we do next, the current track has to stop first
     bsr cdcom_abort
-    tst.l d0
-    beq.s .exit                     ;Device still owns the request, do not touch it
 
     tst.l d2
     ble.s .exit                     ;Stop only
@@ -102,8 +111,35 @@ _ScorpionAPI_Play
     jsr _LVOSendIO(a6)              ;Async - CD_PLAYTRACK does not return until the end
     move.w #1,cdv_playing(a3)
 
+    ;Queuing the play is not enough to get audio out of the drive. The Blitz CD32 library
+    ;followed every PlayCD32 with ControlCD32 1 then ControlCD32 0 - its own syntax string
+    ;documents those as 1=pause, 0=play - and leaving that kick out is exactly why the
+    ;first version of this plugin was silent while the TOC read fine.
+    moveq #1,d0
+    bsr.s cd32_pause
+    moveq #0,d0
+    bsr.s cd32_pause                ;The resume is what actually starts the audio
+
 .exit
     restoreAddressRegisters
+
+;Pause or resume audio on the cloned request, leaving the queued play request alone.
+;D0 = pause mode, 1 to pause and 0 to resume (CD_PAUSE carries it in io_Length, not
+;io_Offset). DoIO is safe here where the CDTV plugin's was not: the autodocs describe
+;CD_PAUSE as taking effect immediately, and the Blitz library issued it the same way from
+;Blitz mode for years.
+cd32_pause
+    move.l d0,d1
+    lea cd32_pauseio(pc),a1
+    move.w #CD_PAUSE,IO_COMMAND(a1)
+    clr.l IO_OFFSET(a1)
+    move.l d1,IO_LENGTH(a1)
+    clr.l IO_DATA(a1)
+    clr.b IO_FLAGS(a1)
+    move.l 4.w,a6
+    lea cd32_pauseio(pc),a1
+    jsr _LVODoIO(a6)
+    rts
 
 _ScorpionAPI_Tracks
     lea cdcom_vars(pc),a0
@@ -114,3 +150,6 @@ _ScorpionAPI_Tracks
 cd32_devname
     dc.b "cd.device",0
     even
+
+cd32_pauseio
+    ds.b IOSTD_SIZE

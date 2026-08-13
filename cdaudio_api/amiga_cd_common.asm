@@ -153,26 +153,27 @@ cdcom_close
 
 ;Cancel any outstanding play request and reclaim the IORequest.
 ;
-;This deliberately does not go straight to WaitIO. Play is reachable from the VM in Blitz
-;mode, where Scorpion has killed the OS interrupts that the device needs in order to
-;complete a request - Wait() there would never return and the game would hang. So we abort,
-;poll CheckIO a bounded number of times, and tell the caller whether the request actually
-;came back. A request we could not reclaim stays flagged as playing, so the next call
-;retries it rather than handing exec an IORequest it still owns.
+;AbortIO on its own only marks the request; the drive can take a good fraction of a second
+;to actually stop, and it is WaitIO that sees the abort through. An earlier version polled
+;CheckIO a bounded number of times instead, on the theory that Blitz mode has killed the
+;interrupts a blocking Wait() depends on. That theory was wrong - the Blitz CD32 library's
+;own StopCD32 is AbortIO followed by WaitIO and was called from Blitz mode for years - and
+;the poll simply gave up before the drive had stopped, so music could never be stopped.
 ;
+;On return cdv_io is always free to reuse.
 ;A3 = variable block. Trashes D0-D1/A0-A1/A6.
-;D0 Return = non-zero if cdv_io is now free to reuse
 CDCOM_ABORT_TRIES equ 10
 
 cdcom_abort
     move.w cdv_playing(a3),d0
-    beq.s .free                     ;Nothing outstanding, the request is already ours
+    beq.s .done                     ;Nothing outstanding, the request is already ours
     move.l 4.w,a6
     lea cdv_io(a3),a1
     jsr _LVOAbortIO(a6)
-    bra.s cdcom_reclaim             ;Tail call, its D0 is our D0
-.free
-    moveq #-1,d0
+    lea cdv_io(a3),a1
+    jsr _LVOWaitIO(a6)
+    clr.w cdv_playing(a3)
+.done
     rts
 
 ;Wait a bounded time for an already-issued request to come back, without ever blocking and

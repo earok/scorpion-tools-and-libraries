@@ -147,8 +147,6 @@ cdtv_stop
     bsr cdcom_waitframes
 
     bsr cdcom_abort
-    tst.l d0
-    beq.s .busy                     ;No request to send STOPPLAY through
 
     lea cdv_io(a3),a1
     move.w #CDTV_STOPPLAY,IO_COMMAND(a1)
