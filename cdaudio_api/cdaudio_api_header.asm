@@ -14,6 +14,10 @@ version equ 1
 ;cannot do. Test with the #CDFlag_ constants in plugin_cdaudio.bb.
 CDFLAG_REPEAT equ 1     ;Bit 0 - the repeat argument to Play is honoured
 CDFLAG_TRACKS equ 2     ;Bit 1 - Tracks counts the disc, rather than returning -1
+;Bit 2 - Play must be called with the OS restored, not from Blitz mode. The engine pays
+;for a SafeQAMIGA/SAFEBLITZ round trip around every Play for plugins that set this, so
+;only set it where the device genuinely needs it (cdtv.device does, cd.device does not).
+CDFLAG_NEEDSOS equ 4
 
 ;Can be used to ensure that a compiled plugin is compatible with scorpion itself
     dc.l version

@@ -15,7 +15,6 @@ _LVOOpenDevice  equ -444
 _LVOCloseDevice equ -450
 _LVODoIO        equ -456
 _LVOSendIO      equ -462
-_LVOCheckIO     equ -468
 _LVOWaitIO      equ -474
 _LVOAbortIO     equ -480
 
@@ -162,8 +161,6 @@ cdcom_close
 ;
 ;On return cdv_io is always free to reuse.
 ;A3 = variable block. Trashes D0-D1/A0-A1/A6.
-CDCOM_ABORT_TRIES equ 10
-
 cdcom_abort
     move.w cdv_playing(a3),d0
     beq.s .done                     ;Nothing outstanding, the request is already ours
@@ -174,42 +171,6 @@ cdcom_abort
     jsr _LVOWaitIO(a6)
     clr.w cdv_playing(a3)
 .done
-    rts
-
-;Wait a bounded time for an already-issued request to come back, without ever blocking and
-;without cancelling it. Use this instead of cdcom_abort for a command that has to be
-;allowed to run - an AbortIO would defeat a stop request before the drive acted on it.
-;
-;A3 = variable block. Trashes D0-D1/A0-A1/A6.
-;D0 Return = non-zero if cdv_io is now free to reuse
-cdcom_reclaim
-    move.w cdv_playing(a3),d0
-    beq.s .free
-    move.l d2,-(sp)
-    move.l 4.w,a6
-
-    move.w #CDCOM_ABORT_TRIES,d2
-.poll
-    lea cdv_io(a3),a1
-    jsr _LVOCheckIO(a6)
-    tst.l d0
-    bne.s .completed
-    moveq #1,d0
-    bsr cdcom_waitframes
-    subq.w #1,d2
-    bne.s .poll
-
-    move.l (sp)+,d2
-    moveq #0,d0                     ;Still with the device
-    rts
-
-.completed
-    lea cdv_io(a3),a1
-    jsr _LVOWaitIO(a6)              ;Already replied, so this only removes the message
-    clr.w cdv_playing(a3)
-    move.l (sp)+,d2
-.free
-    moveq #-1,d0
     rts
 
 ;Busy wait for a number of vertical blanks. Used by the CDTV plugin, whose drive needs
