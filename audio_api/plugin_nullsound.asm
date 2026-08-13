@@ -12,8 +12,9 @@ _ScorpionAPI_ConstMaxVolume equ 64
 ;   0x05        NSS stream stop
 ;   0x06+       samples  (5 + SampleID)
 ;   0x7F down   music    (128 - MusicID)
+;ADPCM-B (command 4) is not driven from here any more - it belongs to the AES/MVS CD audio
+;plugin, which stands in for a disc on cartridge hardware. See cdaudio_api/plugin_adpcmb.asm.
 NULLSOUND_CMD_RESET equ 3
-NULLSOUND_CMD_ADPCMB_STOP equ 4
 NULLSOUND_CMD_STREAM_STOP equ 5
 
 _ScorpionAPI_Install
@@ -33,20 +34,14 @@ _ScorpionAPI_Pause
     rts
 
 _ScorpionAPI_Stop
-; D0 = channel (for ADPCM B)
-    tst.w D0
-    bne _ScorpionAPI_ADPCMB_Stop
     moveq #NULLSOUND_CMD_STREAM_STOP,D0
     bsr.w ns_send
     rts
 
 ; D0 = MusicID (1, 2, 3...) -> command 128 - MusicID
 ; D1 = position (not used here)
-; D2 = channel (for ADPCM B)
 ; SP_InitSong calls SP_Play immediately after, so send here and let Play no-op
 _ScorpionAPI_InitSong
-    tst.w D2
-    bne _ScorpionAPI_ADPCMB_Play    
     neg.b D0
     add.b #$80,D0
     bsr.w ns_send
@@ -81,20 +76,6 @@ _ScorpionAPI_EnableDMAProtection
     rts
 
 _ScorpionAPI_DisableDMAProtection
-    rts
-
-; TEMPORARY: ADPCM-B extension implementations
-; D0 = MusicID (1, 2, 3...) -> command 128 - MusicID
-; The Music and Sample ID limits must be clamped by the compiler, they're not checked here
-_ScorpionAPI_ADPCMB_Play
-    neg.b D0
-    add.b #$80,D0
-    bsr.w ns_send
-    rts
-
-_ScorpionAPI_ADPCMB_Stop
-    moveq #NULLSOUND_CMD_ADPCMB_STOP,D0
-    bsr.w ns_send
     rts
 
 ; NullSound command send routine

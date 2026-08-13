@@ -49,14 +49,15 @@ megadrive_workarea_pointer equ $FF000E
     bra.w _ScorpionAPI_Pause
 
 ;Stop music
-;D0 = Song channel (only for special purposes)
+;D0 = Song channel. Spare - NullSound's ADPCM-B used to ride on this, but that now lives
+;behind the CD audio API instead, so every driver currently ignores it.
     bra.w _ScorpionAPI_Stop
 
 ;Initialise song. Scorpion internally will call _ScorpionAPI_Play immediately after so this should only handle the song setup, not the song triggering
 ;D0 = Song id
 ;D1 = Song position
-;D2 = Song channel (only for special purposes)
-;A0 = Song data position 
+;D2 = Song channel. Spare, as for _ScorpionAPI_Stop above.
+;A0 = Song data position
 ;A1 = Song sample position
     bra.w _ScorpionAPI_InitSong
 

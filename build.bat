@@ -20,3 +20,9 @@ vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\mdsdrv_audio.bin .\a
 vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\xgm_audio.bin .\audio_api\plugin_xgm.asm
 vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\pico_audio.bin .\audio_api\plugin_pico.asm
 vasmm68k_mot -pic -Fbin -nosym -o .\audio_api\audio_plugins\nullsound_audio.bin .\audio_api\plugin_nullsound.asm
+
+::Build all of the CD audio plugins (M68K)
+vasmm68k_mot -pic -Fbin -nosym -I .\cdaudio_api -o .\cdaudio_api\cdaudio_plugins\cd32_cdaudio.bin .\cdaudio_api\plugin_cd32.asm
+vasmm68k_mot -pic -Fbin -nosym -I .\cdaudio_api -o .\cdaudio_api\cdaudio_plugins\cdtv_cdaudio.bin .\cdaudio_api\plugin_cdtv.asm
+vasmm68k_mot -pic -Fbin -nosym -I .\cdaudio_api -o .\cdaudio_api\cdaudio_plugins\neocd_cdaudio.bin .\cdaudio_api\plugin_neocd.asm
+vasmm68k_mot -pic -Fbin -nosym -I .\cdaudio_api -o .\cdaudio_api\cdaudio_plugins\adpcmb_cdaudio.bin .\cdaudio_api\plugin_adpcmb.asm
