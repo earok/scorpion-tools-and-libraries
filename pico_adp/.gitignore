@@ -1,8 +1,0 @@
-.vs/
-Debug/
-Release/
-x64/
-pico_adp/
-*.user
-*.pdb
-*.dll
