@@ -70,10 +70,20 @@ SE_MD_IsPico
 	Seq.b D0
 	rts
 
+;The Pico has no Z80, no TMSS and no controller ports, so it skips all of that.
+;It does still have the VDP's PSG though, so that gets silenced the same way the
+;Mega Drive path does - the four channels are not guaranteed quiet at power on.
 Pico_Setup
 	Move.l #$53454741,D0
 	Lea $800019,A0
 	MOVEP.l D0,0(A0)
+
+	move.l #PSGData,a0
+	move.l #$03,d0
+.PicoCopyPSG:
+	move.b (a0)+,$00C00011
+	dbra d0,.PicoCopyPSG
+
 	bra PicoSkip
 	
 SE_MD_Setup
