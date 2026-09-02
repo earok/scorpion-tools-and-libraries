@@ -48,11 +48,7 @@ _ScorpionAPI_ConstMaxVolume equ 0
 ; Install the Pico audio driver
 ; D0 = PAL flag (unused)
 _ScorpionAPI_Install
-    move.l A0,-(SP)
-    move.l megadrive_workarea_pointer,A0
-    clr.l pico_Address(A0)
-    move.l (SP)+,A0
-    bsr.s _pico_Silence            ; also clears pico_Words
+    bsr.s _pico_Silence            ; clears pico_Address and pico_Words
     moveq #1,D0
     rts
 
@@ -65,7 +61,11 @@ _ScorpionAPI_SFX_Stop
 _pico_Silence
     move.l A0,-(SP)
     move.l megadrive_workarea_pointer,A0
+    ; Order matters - level 3 can cut in between these two. Words first leaves
+    ; the refill looking at a still-armed drain (harmless, the reset follows);
+    ; address first would leave it streaming a live word count from address 0.
     clr.w pico_Words(A0)
+    clr.l pico_Address(A0)
     move.l (SP)+,A0
     move.w #PICO_Reset,(PICO_Control).l
     move.w #PICO_Idle,(PICO_Control).l
@@ -91,40 +91,57 @@ _ScorpionAPI_SFX
     move.w sound_length(A0),D0
     beq.s _pico_Silence            ; empty sample - do not arm the interrupt
 
+    ; Main code runs at level 2 (see StartVBlank), so the level 3 refill can cut
+    ; in part way through the restart. It must never see the new pico_Address
+    ; paired with the old pico_Words: it would stream the new sample under the
+    ; outgoing sound's count and leave the pointer advanced past bytes we have
+    ; not sent yet, so the driver would then read off the end of the sample.
+    move.w SR,-(SP)
+    move.w #$2700,SR
+
+    ; Reset first. It flushes the FIFO so the preamble lands at the front of an
+    ; empty one rather than behind whatever the previous sound left there, and
+    ; it drops the play bit, so the outgoing sound stops asking for data while
+    ; the pointers are swapped over.
+    move.w #PICO_Reset,(PICO_Control).l
+    move.w #PICO_Idle,(PICO_Control).l
+
     move.l A1,-(SP)
     move.l megadrive_workarea_pointer,A1
     move.l sound_pointer(A0),pico_Address(A1)
     move.w D0,pico_Words(A1)
     move.l (SP)+,A1
 
-    ; Restart the stream. The FIFO reset has to happen before the play edge so
-    ; that the preamble lands at the front of an empty FIFO rather than behind
-    ; whatever the previous sound left there.
-    move.w #PICO_Reset,(PICO_Control).l
-    move.w #PICO_Idle,(PICO_Control).l
+    ; Prime the FIFO before the play edge, not after it, so the chip never sees
+    ; its start with nothing to read. Worth the ~80us at level 7 that the fill
+    ; costs - an SFX trigger already resets the chip.
+    bsr.s _pico_Fill
     move.w #PICO_Play,(PICO_Control).l
 
-    ; Falls through to prime the FIFO now rather than waiting for the first interrupt
+    move.w (SP)+,SR
+    moveq #0,D0
+    rts
 
 ; VBlank update - stream pending sample words into the PICO FIFO.
 ; Also the body of the level 3 ADPCM interrupt, which is where most of the
 ; refills actually happen. PicoInterrupt masks to level 7 around this call, so
 ; the two callers can never overlap on pico_Address/pico_Words.
 _ScorpionAPI_VBlank
+_pico_Fill
     movem.l A0-A2,-(SP)
     move.l megadrive_workarea_pointer,A0
+    movea.l #PICO_Data,A2      ; -pic: constant hardware address, not a relocation
 
     move.w pico_Words(A0),D1
-    beq.s @pico_vblank_done
+    beq.s @pico_drain
 
     ; Read FIFO free space: lower 6 bits = free bytes, /2 = free words
-    move.w (PICO_Data).l,D0
+    move.w (A2),D0
     and.w #$3F,D0
     lsr.w #1,D0
     beq.s @pico_vblank_done
 
     move.l pico_Address(A0),A1
-    movea.l #PICO_Data,A2      ; -pic: constant hardware address, not a relocation
 
 @pico_stream_loop:
     move.w (A1)+,(A2)
@@ -141,10 +158,38 @@ _ScorpionAPI_VBlank
     moveq #0,D0
     rts
 
-; Whole sample handed over. Drop the play bit so the FIFO going empty stops
-; re-triggering level 3 - the bytes still sitting in the FIFO play out either way.
+; Whole sample handed over - but up to 62 bytes of it are still queued in the
+; FIFO, including the stream's own 0x00 terminator, so the play bit has to stay
+; set here or the tail is cut off. pico_Address is left non-zero as the "still
+; armed" flag that @pico_drain below looks at.
 @pico_stream_end:
     move.l A1,pico_Address(A0)
     clr.w pico_Words(A0)
+    bra.s @pico_vblank_done
+
+; Nothing left to send. Wait for the chip to report drained before dropping the
+; play bit, and pad the FIFO with 0x00 terminators until it does: that keeps the
+; FIFO above its low water mark, so level 3 stays quiet through the tail instead
+; of retriggering hundreds of times on a FIFO we have nothing left to fill. The
+; chip stops at the encoder's own terminator, so the padding is never decoded.
+@pico_drain:
+    tst.l pico_Address(A0)
+    beq.s @pico_vblank_done        ; already disarmed, nothing is playing
+
+    tst.w (PICO_Control).l
+    bmi.s @pico_drained            ; bit 15 = idle and drained
+
+    move.w (A2),D0
+    and.w #$3F,D0
+    lsr.w #1,D0
+    beq.s @pico_vblank_done
+@pico_pad_loop:
+    clr.w (A2)
+    subq.w #1,D0
+    bne.s @pico_pad_loop
+    bra.s @pico_vblank_done
+
+@pico_drained:
+    clr.l pico_Address(A0)
     move.w #PICO_Idle,(PICO_Control).l
     bra.s @pico_vblank_done
