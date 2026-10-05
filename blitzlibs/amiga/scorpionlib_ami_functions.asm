@@ -75,50 +75,6 @@ EndGetVBR
 	movem.l	(a7)+,a0-a6
   rts
 
-CPUBlankTileBlit
-  Move.l D0,A0
-  MoveQ #0,D7
-  SubQ.l #1,D2
-  AddQ #2,D1
-
-ClearBP
-  Move.w D7,(A0) ;1
-  Add.l D1,A0
-  Move.w D7,(A0) ;2
-  Add.l D1,A0
-  Move.w D7,(A0) ;3
-  Add.l D1,A0
-  Move.w D7,(A0) ;4
-  Add.l D1,A0
-  Move.w D7,(A0) ;5
-  Add.l D1,A0
-  Move.w D7,(A0) ;6
-  Add.l D1,A0
-  Move.w D7,(A0) ;7
-  Add.l D1,A0
-  Move.w D7,(A0) ;8
-  Add.l D1,A0
-  Move.w D7,(A0) ;1
-  Add.l D1,A0
-  Move.w D7,(A0) ;2
-  Add.l D1,A0
-  Move.w D7,(A0) ;3
-  Add.l D1,A0
-  Move.w D7,(A0) ;4
-  Add.l D1,A0
-  Move.w D7,(A0) ;5
-  Add.l D1,A0
-  Move.w D7,(A0) ;6
-  Add.l D1,A0
-  Move.w D7,(A0) ;7
-  Add.l D1,A0
-  Move.w D7,(A0) ;8
-  Add.l D1,A0  
-
-  DBra D2,ClearBP
-  RTS
-
-
 PushSpritePointer
   RTS
 

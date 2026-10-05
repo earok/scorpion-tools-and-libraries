@@ -381,12 +381,6 @@
     subs GetTileASMAddress,0,0
   name "GetTileASMAddress","X,Y,MapTileDataAddress,YTileLookupAddress"  
   
-  afunction long
-    args long,long,long
-    libs
-    subs GetTileASMAddressLine,0,0
-  name "GetTileASMAddressLine","Y,MapTileDataAddress,YTileLookupAddress"    
-  
    afunction long
     args long,long,long,long
     libs
@@ -441,12 +435,6 @@
 		subs PushTileToQueue,0,0
 	name "PushTileToQueue","*BQ.BufferQueue,X,Y"
 
-	afunction word
-		args long,long
-		libs
-		subs RectOverlap,0,0
-	name "RectOverlap","*Rect1,*Rect2"
-
 	astatement
 		args long,long
 		libs
@@ -471,23 +459,11 @@
 		subs CopyNewType,0,0
 	name "CopyNewType","Size.w, Address1.l, Address2.l"    
 
-	astatement
-		args
-		libs
-		subs DoIllegal,0,0
-	name "DoIllegal",""    
-
   afunction word
     args long
     libs
     subs SqrRoot,0,0
     name "SqrRoot",""
-
-  afunction quick
-    args quick
-    libs
-    subs SqrRootQ,0,0
-    name "SqrRootQ",""
 
 	afunction quick
 		args quick,quick,quick

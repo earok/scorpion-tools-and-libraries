@@ -215,11 +215,6 @@ VDPRegisters:
 	dc.b $00 ; 22: DMA source address mid byte
 	dc.b $80 ; 23: DMA source address hi byte, memory-to-VRAM mode (bits 6-7)
 
-
-SE_MD_Stop
-	Move #$2700,SR 	;Final setup steps ;DISABLE ALL INTERRUPTS
-   	stop #$2700 ; Halt CPU
-
 SE_MD_HBlank_On
 	move.w #$8014,VDP_CONTROL 
 	RTS
@@ -287,136 +282,6 @@ SE_MD_SetHorizontalScrollTable
 	Move.l D4,D0
 	RTS	
 
-;D0 = Foreground scroll X
-;D1 = Background scroll x
-SE_MD_Scroll:
-  	Lea.l VDP_DATA,A2
-
-	;X Scroll must be clamped 
-	And.w #$1ff,D0
-	And.w #$1ff,D1
-
-	;X Scroll is negative
-	NEG.w D0
-	NEG.w D1
-
-  move.l #$78000003,4(A2) ;Set the address of the H Scroll memory
-	move.w D0,(A2) ;Load the X foreground position
-	move.w D1,(A2) ;Load the X background position
-	RTS
-
-;D0 = Foreground scroll X
-;D1 = Background scroll table
-; SE_MD_Scroll_Line IV\DrawCameraX & $1FF,IV\DrawCameraY & $FF,ParallaxY & $FF,&ParallaxOffsets(0)             
-SE_MD_Scroll_Line:
-  	Lea.l VDP_DATA,A1
-
-	;X Scroll is negative
-	NEG.w D0
-
-  ;Write the foreground first
-	Move.w #$8F20,4(A1)
-	move.l #$78000003,4(A1) ;Set the address of the H Scroll memory
-	move.w D0,(A1) ;1
-	move.w D0,(A1) ;2
-	move.w D0,(A1) ;3
-	move.w D0,(A1) ;4
-	move.w D0,(A1) ;5
-	move.w D0,(A1) ;6
-	move.w D0,(A1) ;7
-	move.w D0,(A1) ;8
-	move.w D0,(A1) ;9
-	move.w D0,(A1) ;10  
-	move.w D0,(A1) ;1
-	move.w D0,(A1) ;2
-	move.w D0,(A1) ;3
-	move.w D0,(A1) ;4
-	move.w D0,(A1) ;5
-	move.w D0,(A1) ;6
-	move.w D0,(A1) ;7
-	move.w D0,(A1) ;8
-	move.w D0,(A1) ;9
-	move.w D0,(A1) ;10  
-	move.w D0,(A1) ;1
-	move.w D0,(A1) ;2
-	move.w D0,(A1) ;3
-	move.w D0,(A1) ;4
-	move.w D0,(A1) ;5
-	move.w D0,(A1) ;6
-	move.w D0,(A1) ;7
-	move.w D0,(A1) ;8
-	move.w D0,(A1) ;9
-	move.w D0,(A1) ;10  
-    
-  move.l #$78020003,4(A1) ;Set the address of the H Scroll memory
-  move.l D1,A0
-
-	move.w (A0),(A1) ;1
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;2
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;3
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;4
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;5
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;6
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;7
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;8
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;9
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;10
-	AddQ.l #4,A0
-
-	move.w (A0),(A1) ;1
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;2
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;3
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;4
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;5
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;6
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;7
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;8
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;9
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;10
-	AddQ.l #4,A0
-	
-	move.w (A0),(A1) ;1
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;2
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;3
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;4
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;5
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;6
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;7
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;8
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;9
-	AddQ.l #4,A0
-	move.w (A0),(A1) ;10
-	AddQ.l #4,A0		
-
-
-	Move.w #$8F02,4(A1)
-  RTS
 
 
 ;*SPalette=D0
@@ -616,17 +481,6 @@ SE_MD_LoadPatterns_DMA:
 	LSL.l #5,D1 ;Pattern index needs to be multiplied by 32
 	LSL.l #4,D2 ;Number of patterns needs to be multiplied by 16
 	EXG D2,D1
-	Bra MD_DMA_Transfer_SkipSize
-
-;D0 - Source address in 68K memory
-;D1 - Length
-;D2 - Destination address in VDP memory
-SE_MD_DMA_Transfer
-
-	;Divide the size by half
-	lsr.l #1,D1
-
-MD_DMA_Transfer_SkipSize	
 	Lea VDP_CONTROL,A3
 
 	;Divide the source by half

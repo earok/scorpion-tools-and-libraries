@@ -123,12 +123,6 @@
 		subs 0,0,0
 	name "SetupTileBlit",""
 
-	astatement
-		args long,long,long
-		libs
-		subs CPUBlankTileBlit,0,0
-	name "CPUBlankTileBlit",""
-
 	astatement quick
 		args long,long,word
 		libs

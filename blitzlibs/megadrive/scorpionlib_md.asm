@@ -40,12 +40,6 @@
   name "SE_MD_Setup","Initialisation process for Mega Drive"
 
   astatement
-    args
-    libs
-    subs SE_MD_Stop,0,0	
-  name "SE_MD_Stop","Stop the MegaDrive CPU"
-
-  astatement
     args byte,byte
     libs
     subs SE_MD_SetPlaneSize,0,0	
@@ -77,18 +71,6 @@
     libs
     subs SE_MD_FadePalette,0,0    
 	name "SE_MD_FadePalette","*SPalette.Scorpion_Interface,Amount.q,FirstEntry.w,NumberOfEntries.w,Destination.l,LUT.l"        
-
-  astatement
-    args word,word ;,word,word
-    libs
-    subs SE_MD_Scroll,0,0
-  name "SE_MD_Scroll","FG X,BG X" ;,BG X,BG Y"	
-
-  astatement
-    args word,long
-    libs
-    subs SE_MD_Scroll_Line,0,0
-  name "SE_MD_Scroll_Line","FG X,BG X Data"	
 
   astatement
     args long, long, long
@@ -137,12 +119,6 @@
     libs
     subs SE_MD_CopyTo_VDP,0,0
   name "SE_MD_CopyTo_VDP","Source Address,Length,Dest Address,Auto Increment"	
-
-  astatement
-    args long,long,long
-    libs
-    subs SE_MD_DMA_Transfer,0,0
-  name "SE_MD_DMA_Transfer","Source Address,Dest Address,Length"
 
   astatement
     args long,long,long,long,long

@@ -1,8 +1,5 @@
 BlockDataSize equ 68 ;Need to round this down to 64
 
-DoIllegal
-  ILLEGAL
-
 Finish
 	RTS
 
@@ -120,18 +117,6 @@ GetTileASMAddress
 		Asl.l #2,D0 ;Multiply by 4	
 		Add.l D2,D0 ;Add the absolute map tile data address
 		rts
-		
-GetTileASMAddressLine
-		;Part 1 - Get the Y tile lookup address		
-		Add.w D0,D0
-		Add.w D0,D0 ;Convert to LONG address
-		Move.l D2,A0
-		Move.l (A0,D0),D0
-
-		;Part 2 - Add the X and Y coordinates together
-		Asl.l #2,D0;Multiply by 4		
-		Add.l D1,D0 ;Add the absolute map tile data address
-		rts		
 		
 GetTileASM
 		Add.w D1,D1
@@ -346,84 +331,6 @@ PushTileToQueue
 
 	Addq.w #1,(A0) 	;Bump the counter count
 	RTS
-
-;+0 = X
-;+2 = Y
-;+4 = Width
-;+6 = Height
-RectOverlap
-  Move.l D0,A0
-  Move.l D1,A1
-
-;  rect0.x < rect1.x + rect1.w &&
-  Move.w (A0),D0
-  Move.w (A1),d1
-  Add.w 4(A1),d1
-  Cmp.w D1,D0
-  BGT RectOverlapFalse
-
-; rect0.x + rect0.w > rect1.x &&
-  Add.w 4(A0),D0
-  Move.w (A1),D1
-  Cmp.w D1,D0
-  BLT RectOverlapFalse
-
-;    rect0.y < rect1.y + rect1.h &&
-  Move.w 2(A0),D0
-  Move.w 2(A1),d1
-  Add.w 6(A1),d1
-  Cmp.w D1,D0
-  BGT RectOverlapFalse
-
-;    rect1.h + rect1.y > rect2.y
-  Add.w 6(A0),D0
-  Move.w 2(A1),D1
-  Cmp.w D1,D0
-  BLT RectOverlapFalse
-
-  MoveQ #-1,D0
-  RTS
-
-RectOverlapFalse
-  MoveQ #0,D0
-  RTS
-
-
-;+0 = Left
-;+2 = Top
-;+4 = Right
-;+6 = Bottom
-RectOverlap2
-  Move.l D0,A0
-  Move.l D1,A1
-
-;  rect0.l < rect1.r &&
-  Move.w (A0),D0
-  Move.w 4(A1),d1
-  Cmp.w D0,D1
-  BGT RectOverlapFalse
-
-; rect0.r > rect1.l &&
-  Move.w 4(A0),D0
-  Move.w (A1),d1
-  Cmp.w D1,D0
-  BLT RectOverlapFalse
-
-;    rect0.t < rect1.b &&
-  Move.w 2(A0),D0
-  Move.w 6(A1),d1
-  Cmp.w D1,D0
-  BGT RectOverlapFalse
-
-;    rect0.b > rect1.t
-  Move.w 6(A0),D0
-  Move.w 2(A1),d1
-  Cmp.w D1,D0
-  BLT RectOverlapFalse
-
-  MoveQ #-1,D0
-  RTS
-
 
 SE_Int
   Swap.w D0 ;Put the upper 16 bits into the lower 16 bits
@@ -785,13 +692,6 @@ linkitem:                      ;link item in a1 after a2
 SE_QFrac
   And.l #$0000FFFF,D0
   RTS
-
-SqrRootQ
-  lsr.l #4,D0 ;Shift right by 4
-  bsr SqrRoot
-  lsl.l #4,D0  ; shift left 4 (back to 16.16 scale)
-  lsl.l #6,D0  ; shift left 6
-  rts
 
 SqrRoot
 lsqrt   tst.l d0        (4)     ; skip doing zero.
