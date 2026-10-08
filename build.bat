@@ -10,6 +10,9 @@ vasmm68k_mot -kick1hunks -Fhunkexe -nosym -o .\blitzlibs\bin\scorpionlib_neo.obj
 ::Build the Mega Drive specific functions
 vasmm68k_mot -kick1hunks -Fhunkexe -nosym -o .\blitzlibs\bin\scorpionlib_md.obj .\blitzlibs\megadrive\scorpionlib_md.asm
 
+::Build the Amiga custom disk boot sector
+vasmm68k_mot -Fbin -nosym -o .\amiga_boot_sector\bin\bootsector.bin .\amiga_boot_sector\bootsector.asm
+
 ::Build all of the audio plugins (Z80)
 sjasm .\audio_api\plugin_xgm_z80.s80 .\audio_api\audio_plugins\plugin_xgm_z80.bin
 call .\audio_api\nullsound\build_nullsound.bat
