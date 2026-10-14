@@ -509,7 +509,7 @@ SE_ClearList_Done
   RTS
 
 SE_SortList:
-  MOVE d1,d6 ;Move newtype offset to D6
+  MOVE.w d1,d6 ;Move newtype offset to D6
   MOVEM.l a4-a6,-(a7) ;Stack push
   MOVE.l d0,a0 ;Move the list itself to A0
   SUB.l #24,d0 
