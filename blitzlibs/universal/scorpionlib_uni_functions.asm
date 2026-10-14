@@ -509,32 +509,28 @@ SE_ClearList_Done
   RTS
 
 SE_SortList:
-  MOVE d1,d6
-  MOVEM.l a4-a6,-(a7)
-  MOVE.l d0,a0
-  SUB.l #24,d0
+  MOVE d1,d6 ;Move newtype offset to D6
+  MOVEM.l a4-a6,-(a7) ;Stack push
+  MOVE.l d0,a0 ;Move the list itself to A0
+  SUB.l #24,d0 
   LEA -28(a0),a0
-  CMP.l (a0),d0
-  BEQ dun
+  CMP.l (a0),d0 ;Compare the list head and end
+  BEQ dun ;Nothing to sort
     dopass:
       MOVE.l (a0),a1
       MOVEM.l (a1),a2-a3
       CMP.l a2,d0
       BEQ dun
         MOVE.l (a2),a4
-        MOVE.l 8(a1,d6),d1
+        MOVE.w 8(a1,d6),d1 ;Comparer A
         MOVEQ #0,d3      ;d3=flag
-;        CMP.l d3,a3
-        ;NEVER TRAP
-;        BNE nxpass
-;          TRAP #7
 
         nxpass:
-          MOVE.l 8(a2,d6),d2
-          CMP.l d1,d2
+          MOVE.w 8(a2,d6),d2 ;Comparer B
+          CMP.w d1,d2
           BMI doswap
 
-          MOVE.l d2,d1
+          MOVE.w d2,d1
           nxitem:
           CMP.l d0,a4
           BEQ dunpass
@@ -548,7 +544,7 @@ SE_SortList:
     TST d3
     BNE dopass
   dun:
-  MOVEM.l (a7)+,a4-a6
+  MOVEM.l (a7)+,a4-a6 ;Stack pop
   RTS
 
 doswap:
