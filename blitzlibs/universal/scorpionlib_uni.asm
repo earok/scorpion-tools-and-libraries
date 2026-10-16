@@ -156,10 +156,10 @@
 
 ;Scorpion internal use
   astatement
-    args quick,long
+    args long,long
     libs
     subs 0,0,0
-  name "AreNotOnSameTileSetup","Destination Actor Pointer"
+  name "AreNotOnSameTileSetup","Tile1 Tile2 Distance"
 
   afunction word
     args long,quick
