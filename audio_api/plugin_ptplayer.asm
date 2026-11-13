@@ -26,14 +26,20 @@ _ScorpionAPI_Uninstall
     restoreAddressRegisters
 
 _ScorpionAPI_Play
+    storeAddressRegisters
+    moveq #$f,D0
+    bsr _mt_channelmask         ;Unmute music channels
     lea _mt_Enable,A0
     move.b #-1,(A0)
-    rts
+    restoreAddressRegisters
 
 _ScorpionAPI_Pause
+    storeAddressRegisters
+    moveq #0,D0
     lea _mt_Enable,A0
-    move.b #0,(A0)
-    rts
+    move.b D0,(A0)
+    bsr _mt_channelmask         ;Mute held/looping music notes; SFX channels untouched    
+    restoreAddressRegisters
 
 _ScorpionAPI_Stop
     storeAddressRegisters
