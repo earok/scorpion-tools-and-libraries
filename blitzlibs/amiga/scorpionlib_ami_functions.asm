@@ -620,6 +620,7 @@ FastBlit
 
   WaitBlitFast DoMaskBlit2B
   Swap D1
+  Clr.w D1       
   Move.l D1,BLTCON0(A2) ;Masked copy
   MoveQ #-1,D1
   Move.l D1,BLTAFWM(A2)
